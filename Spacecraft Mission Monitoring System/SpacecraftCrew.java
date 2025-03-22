@@ -64,4 +64,18 @@ public class SpacecraftCrew {
     public void setCrewHealthStatus(String[] crewHealthStatus){
         this.crewHealthStatus = crewHealthStatus;
     }
+
+    /**
+     * Logs an executed maneuver with system-level tracking.
+     */
+    public void logExecutedManeuver(Maneuver maneuver) {
+        // Store maneuver and update status
+    }
+
+    /**
+     * Triggers system shutdown or switch to safe mode for the mission.
+     */
+    public void terminateMission(int missionID, String reason) {
+        // Execute shutdown or safe mode
+    }
 }
