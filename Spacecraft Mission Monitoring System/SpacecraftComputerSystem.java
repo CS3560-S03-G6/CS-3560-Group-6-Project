@@ -40,4 +40,37 @@ public class SpacecraftComputerSystem {
     public void setCommunicationStatus(String communicationStatus){
         this.communicationStatus = communicationStatus;
     }
+
+    // additonal methods:
+    // Additional methods
+
+    /**
+     * Logs an executed maneuver with system-level tracking.
+     */
+    public void logExecutedManeuver(Maneuver maneuver) {
+        // Store maneuver and update status
+    }
+
+    /**
+     * Triggers system shutdown or switch to safe mode for the mission.
+     */
+    public void terminateMission(int missionID, String reason) {
+        // Execute shutdown or safe mode
+    }
+
+    /**
+     * Scans all missions and triggers alerts for fuel or maneuver failures.
+     */
+    public void alertSpacecraftComputerSystem(List<Mission> missions, List<Spacecraft> spacecrafts, List<Maneuver> maneuvers) {
+        // Loop through missions and identify issues
+    }
+
+    /**
+     * Generates a report summarizing a mission's current state.
+     */
+    public MissionReport generateMissionReport(Mission mission, List<Maneuver> maneuvers, List<Issue> issues) {
+        // Build and return report
+        return null; // Placeholder
+    }
+
 }
