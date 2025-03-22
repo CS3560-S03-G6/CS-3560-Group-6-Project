@@ -40,4 +40,10 @@ public class SpacecraftComputerSystem {
     public void setCommunicationStatus(String communicationStatus){
         this.communicationStatus = communicationStatus;
     }
+
+    // Logs a maneuver that has already been executed
+    // Parameters: missionID and Maneuver object containing execution data
+    public void logExecutedManeuver(String missionID, Maneuver executedManeuver) {
+        // TODO: Add logic to log an executed maneuver to the mission record
+    }
 }
