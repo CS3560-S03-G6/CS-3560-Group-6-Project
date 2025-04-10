@@ -64,4 +64,10 @@ public class SpacecraftCrew {
     public void setCrewHealthStatus(String[] crewHealthStatus){
         this.crewHealthStatus = crewHealthStatus;
     }
+
+    // Logs a maneuver that has already been executed
+    // Parameters: missionID and Maneuver object containing execution data
+    public void logExecutedManeuver(String missionID, Maneuver executedManeuver) {
+        // TODO: Add logic to log an executed maneuver to the mission record
+    }
 }
