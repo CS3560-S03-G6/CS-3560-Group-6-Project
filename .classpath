@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+    <!-- Source directory -->
+    <classpathentry kind="src" path="Spacecraft Mission Monitoring System"/>
+    
+    <!-- Link the Connector/J JAR file -->
+    <classpathentry kind="lib" path="lib/mysql-connector-j-9.3.0.jar"/>
+    
+    <!-- Output folder -->
+    <classpathentry kind="output" path="bin"/>
+</classpath>
