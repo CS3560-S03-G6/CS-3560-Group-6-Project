@@ -1,91 +1,80 @@
-
 public class MissionReport {
     private int missionReportID;
     private int missionID;
-    private int dateGenerated;
-    private Maneuver[] executedManeuvers;
+    private LocalDateTime dateGenerated;
+    private List<Maneuver> maneuversIncluded;  // all maneuvers, not just executed
     private int currentFuelUsage;
     private int currentFuelLevel;
-    private Issue[] detectedIssues;
+    private List<Issue> detectedIssues;
 
-    //Constructor that takes in all necessary fields
-    public MissionReport(int missionReportID, int missionID, int dateGenerated, Maneuver[] executedManeuvers, int currentFuelUsage, int currentFuelLevel, Issue[] detectedIssues){
+    // constructor that takes in all fields
+    public MissionReport(int missionReportID, int missionID, LocalDateTime dateGenerated,
+                         List<Maneuver> maneuversIncluded, int currentFuelUsage,
+                         int currentFuelLevel, List<Issue> detectedIssues) {
         this.missionReportID = missionReportID;
         this.missionID = missionID;
         this.dateGenerated = dateGenerated;
-        this.executedManeuvers = executedManeuvers;
+        this.maneuversIncluded = maneuversIncluded;
         this.currentFuelUsage = currentFuelUsage;
         this.currentFuelLevel = currentFuelLevel;
         this.detectedIssues = detectedIssues;
     }
 
-    //Getter for missionReportID
-    public int getMissionReportID(){
+    // getters and setters for all attributes
+
+    public int getMissionReportID() {
         return missionReportID;
     }
 
-    //Setter for missionReportID
-    public void setMissionReportID(int missionReportID){
+    public void setMissionReportID(int missionReportID) {
         this.missionReportID = missionReportID;
     }
 
-    //Getter for missionID
-    public int getMissionID(){
+    public int getMissionID() {
         return missionID;
     }
 
-    //Setter for missionID
-    public void setMissionID(int missionID){
+    public void setMissionID(int missionID) {
         this.missionID = missionID;
     }
 
-    //Getter for dateGenerated
-    public int getDateGenerated(){
+    public LocalDateTime getDateGenerated() {
         return dateGenerated;
     }
 
-    //Setter for dateGenerated
-    public void setDateGenerated(int dateGenerated){
+    public void setDateGenerated(LocalDateTime dateGenerated) {
         this.dateGenerated = dateGenerated;
     }
 
-    //Getter for executedManeuvers
-    public Maneuver[] getExecutedManeuvers(){
-        return executedManeuvers;
+    public List<Maneuver> getManeuversIncluded() {
+        return maneuversIncluded;
     }
 
-    //Setter for executedManeuvers
-    public void setExecutedManeuvers(Maneuver[] executedManeuvers){
-        this.executedManeuvers = executedManeuvers;
+    public void setManeuversIncluded(List<Maneuver> maneuversIncluded) {
+        this.maneuversIncluded = maneuversIncluded;
     }
 
-    //Getter for currentFuelUsage
-    public int getCurrentFuelUsage(){
+    public int getCurrentFuelUsage() {
         return currentFuelUsage;
     }
 
-    //Setter for currentFuelUsage
-    public void setCurrentFuelUsage(int currentFuelUsage){
+    public void setCurrentFuelUsage(int currentFuelUsage) {
         this.currentFuelUsage = currentFuelUsage;
     }
 
-    //Getter for currentFuelLevel
-    public int getCurrentFuelLevel(){
+    public int getCurrentFuelLevel() {
         return currentFuelLevel;
     }
 
-    //Setter for currentFuelLevel
-    public void setCurrentFuelLevel(int currentFuelLevel){
+    public void setCurrentFuelLevel(int currentFuelLevel) {
         this.currentFuelLevel = currentFuelLevel;
     }
 
-    //Getter for detectedIssues
-    public Issue[] getDetectedIssues(){
+    public List<Issue> getDetectedIssues() {
         return detectedIssues;
     }
 
-    //Setter for detectedIssues
-    public void setDetectedIssues(Issue[] detectedIssues){
+    public void setDetectedIssues(List<Issue> detectedIssues) {
         this.detectedIssues = detectedIssues;
     }
-}
+} 
