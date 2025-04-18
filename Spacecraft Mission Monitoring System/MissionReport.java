@@ -2,26 +2,24 @@ public class MissionReport {
     private int missionReportID;
     private int missionID;
     private LocalDateTime dateGenerated;
-    private List<Maneuver> maneuversIncluded;  // all maneuvers, not just executed
+    private List<Maneuver> maneuvers;
     private int currentFuelUsage;
     private int currentFuelLevel;
     private List<Issue> detectedIssues;
 
-    // constructor that takes in all fields
     public MissionReport(int missionReportID, int missionID, LocalDateTime dateGenerated,
-                         List<Maneuver> maneuversIncluded, int currentFuelUsage,
-                         int currentFuelLevel, List<Issue> detectedIssues) {
+                         List<Maneuver> maneuvers, int currentFuelUsage, int currentFuelLevel,
+                         List<Issue> detectedIssues) {
         this.missionReportID = missionReportID;
         this.missionID = missionID;
         this.dateGenerated = dateGenerated;
-        this.maneuversIncluded = maneuversIncluded;
+        this.maneuvers = maneuvers;
         this.currentFuelUsage = currentFuelUsage;
         this.currentFuelLevel = currentFuelLevel;
         this.detectedIssues = detectedIssues;
     }
 
-    // getters and setters for all attributes
-
+    // getter and setter for missionReportID
     public int getMissionReportID() {
         return missionReportID;
     }
@@ -30,6 +28,7 @@ public class MissionReport {
         this.missionReportID = missionReportID;
     }
 
+    // getter and setter for missionID
     public int getMissionID() {
         return missionID;
     }
@@ -38,6 +37,7 @@ public class MissionReport {
         this.missionID = missionID;
     }
 
+    // getter and setter for dateGenerated
     public LocalDateTime getDateGenerated() {
         return dateGenerated;
     }
@@ -46,14 +46,16 @@ public class MissionReport {
         this.dateGenerated = dateGenerated;
     }
 
-    public List<Maneuver> getManeuversIncluded() {
-        return maneuversIncluded;
+    // getter and setter for maneuvers
+    public List<Maneuver> getManeuvers() {
+        return maneuvers;
     }
 
-    public void setManeuversIncluded(List<Maneuver> maneuversIncluded) {
-        this.maneuversIncluded = maneuversIncluded;
+    public void setManeuvers(List<Maneuver> maneuvers) {
+        this.maneuvers = maneuvers;
     }
 
+    // getter and setter for currentFuelUsage
     public int getCurrentFuelUsage() {
         return currentFuelUsage;
     }
@@ -62,6 +64,7 @@ public class MissionReport {
         this.currentFuelUsage = currentFuelUsage;
     }
 
+    // getter and setter for currentFuelLevel
     public int getCurrentFuelLevel() {
         return currentFuelLevel;
     }
@@ -70,11 +73,26 @@ public class MissionReport {
         this.currentFuelLevel = currentFuelLevel;
     }
 
+    // getter and setter for detectedIssues
     public List<Issue> getDetectedIssues() {
         return detectedIssues;
     }
 
     public void setDetectedIssues(List<Issue> detectedIssues) {
         this.detectedIssues = detectedIssues;
+    }
+
+    // method to display a summary of this report
+    public void displayReportSummary() {
+        System.out.println("Mission Report Summary:");
+        System.out.println("Mission ID: " + missionID);
+        System.out.println("Report Generated On: " + dateGenerated);
+        System.out.println("Total Maneuvers Logged: " + maneuvers.size());
+        System.out.println("Current Fuel Usage: " + currentFuelUsage);
+        System.out.println("Current Fuel Level: " + currentFuelLevel);
+        System.out.println("Detected Issues: " + detectedIssues.size());
+        for (Issue issue : detectedIssues) {
+            System.out.println(" - Issue: " + issue.getIssueType() + ", Severity: " + issue.getSeverityLevel());
+        }
     }
 } 
