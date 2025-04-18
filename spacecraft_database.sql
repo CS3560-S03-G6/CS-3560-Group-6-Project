@@ -64,14 +64,10 @@ CREATE TABLE `issue` (
   `detectionTime` varchar(50) DEFAULT NULL,
   `severityLevel` int DEFAULT NULL,
   `alertTriggered` tinyint(1) DEFAULT NULL,
-  `alertRecipient` varchar(100) DEFAULT NULL,
-  `employeeID` int DEFAULT NULL,
   `resolutionStatus` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`issueID`),
   KEY `missionID` (`missionID`),
-  KEY `employeeID` (`employeeID`),
-  CONSTRAINT `issue_ibfk_1` FOREIGN KEY (`missionID`) REFERENCES `mission` (`missionID`),
-  CONSTRAINT `issue_ibfk_2` FOREIGN KEY (`employeeID`) REFERENCES `missioncontroller` (`employeeID`)
+  CONSTRAINT `issue_ibfk_1` FOREIGN KEY (`missionID`) REFERENCES `mission` (`missionID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -267,4 +263,4 @@ CREATE TABLE `spacecraftcrew` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-04-16 15:47:21
+-- Dump completed on 2025-04-18 15:02:03
