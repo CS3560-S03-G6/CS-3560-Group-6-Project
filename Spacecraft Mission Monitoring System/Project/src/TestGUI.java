@@ -5,6 +5,14 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
 public class TestGUI extends JFrame {
+
+    public static void main(String[] args) {
+//        SwingUtilities.invokeLater(() -> new TestGUI());
+
+        TestGUI example = new TestGUI("Spacecraft Mission Control System");
+
+    }
+
     String title = "Untitled";
     JFrame frame;
 
@@ -23,7 +31,7 @@ public class TestGUI extends JFrame {
         frame = new JFrame(newTitle);
         frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1000, 800);
+        frame.setSize(500, 400);
         frame.setLayout(new FlowLayout());
 
         JButton button = new JButton("Test Button!");
@@ -58,11 +66,22 @@ public class TestGUI extends JFrame {
         missionMenu.add(terminateMission);
         missionMenu.add(scheduleImmediateManeuver);
         missionMenu.add(scheduleFutureManeuver);
+        updateMission.setEnabled(false);
+        terminateMission.setEnabled(false);
+        scheduleImmediateManeuver.setEnabled(false);
+        scheduleFutureManeuver.setEnabled(false);
 
         addMission.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 addMissionDialog();
+            }
+        });
+
+        searchMission.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                searchMissionDialog();
             }
         });
 
@@ -76,6 +95,7 @@ public class TestGUI extends JFrame {
         dialog.setSize(400, 300);
         dialog.setLocationRelativeTo(frame);
         dialog.setLayout(new BorderLayout());
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
         //Create upper panel with exit button
         //==================================================
@@ -150,7 +170,8 @@ public class TestGUI extends JFrame {
         //Create lower panel with Submit button
         //==================================================
         JPanel lowerButtonPanel = new JPanel();
-        upperButtonPanel.setLayout(new GridLayout(1, 0));
+        lowerButtonPanel.setLayout(new GridLayout(1, 0));
+
         JPanel lowerFiller1 = new JPanel();
         JPanel lowerFiller2 = new JPanel();
 
@@ -175,6 +196,125 @@ public class TestGUI extends JFrame {
         lowerButtonPanel.add(submitButton);
         lowerButtonPanel.add(lowerFiller2);
 
+        dialog.add(lowerButtonPanel, BorderLayout.SOUTH);
+
+        dialog.setVisible(true);
+    }
+
+
+    public void searchMissionDialog() {
+        JDialog dialog = new JDialog(this, "Search a Mission", true);
+        dialog.setSize(600, 300);
+        dialog.setLocationRelativeTo(frame);
+        dialog.setLayout(new BorderLayout());
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+        //Create upper panel with search bar
+        //==================================================
+        JPanel upperPanel = new JPanel();
+        upperPanel.setLayout(new GridLayout(1, 0));
+
+        JLabel searchLabel = new JLabel("Search Mission(s): ");
+        JTextField searchTextField = new JTextField();
+
+        JButton searchButton = new JButton("Search");
+        JButton viewAll = new JButton("View All");
+
+        upperPanel.add(searchLabel);
+        upperPanel.add(searchTextField);
+        upperPanel.add(searchButton);
+        upperPanel.add(viewAll);
+
+
+        //Create middle panel with List
+        //==================================================
+        JPanel middlePanel = new JPanel();
+        middlePanel.setLayout(new BorderLayout());
+
+        DefaultListModel listContents = new DefaultListModel<>();
+        JList list = new JList(listContents);
+        JScrollPane scrollPane = new JScrollPane(list);
+        String[] data = {"Test 1", "Test 2", "Test 3", "Test 4", "Mission 1", "Mission 2", "Mission 3", "Example", "Example A", "Example B", "Example C"};
+
+        for (int i = 0; i < data.length; i++) {
+            listContents.add(i, data[i]);
+        }
+        searchButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String searchKey = searchTextField.getText().toLowerCase();
+                listContents.clear();
+                int addIndex = 0;
+                boolean searchFound = false;
+
+                if (!searchKey.equals(null)) {
+                    for (int i = 0; i < data.length; i++) {
+                        if (data[i].toLowerCase().contains(searchKey)) {
+                            listContents.add(addIndex, data[i]);
+                            addIndex++;
+                            searchFound = true;
+                        }
+                    }
+                }
+
+                if (!searchFound) {
+                    JOptionPane.showMessageDialog(null, "Search returned no results!");
+                    viewAll.doClick();
+                }
+            }
+        });
+
+
+        viewAll.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                listContents.clear();
+
+                for (int i = 0; i < data.length; i++) {
+                    listContents.add(i, data[i]);
+                }
+            }
+        });
+
+
+        middlePanel.add(scrollPane);
+
+
+        //Create lower panel with Submit button
+        //==================================================
+        JPanel lowerButtonPanel = new JPanel();
+        lowerButtonPanel.setLayout(new GridLayout(1, 0));
+
+        JButton selectButton = new JButton("Select Entry");
+        selectButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (list.getSelectedValues() != null) {
+                    Object[] entries = list.getSelectedValues();
+                    for (int i = 0; i < entries.length; i++) {
+                        System.out.println(entries[i]);
+                    }
+                }
+
+                dialog.setVisible(false);
+            }
+        });
+
+
+        JButton cancelButton = new JButton("Cancel");
+        cancelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dialog.setVisible(false);
+            }
+        });
+
+        lowerButtonPanel.add(selectButton);
+        lowerButtonPanel.add(cancelButton);
+
+
+        dialog.add(upperPanel, BorderLayout.NORTH);
+        dialog.add(middlePanel, BorderLayout.CENTER);
         dialog.add(lowerButtonPanel, BorderLayout.SOUTH);
 
         dialog.setVisible(true);
