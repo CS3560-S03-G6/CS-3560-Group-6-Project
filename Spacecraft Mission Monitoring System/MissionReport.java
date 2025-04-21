@@ -1,3 +1,5 @@
+import java.util.List;
+
 public class MissionReport {
     private int missionReportID;
     private int missionID;
