@@ -88,4 +88,8 @@ public class MissionReport {
     public void setDetectedIssues(Issue[] detectedIssues){
         this.detectedIssues = detectedIssues;
     }
+    
+    public String displayReportSummary(){
+        return "Report summary";
+    }
 }
