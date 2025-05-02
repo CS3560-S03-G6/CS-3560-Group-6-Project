@@ -35,7 +35,7 @@ public class Mission {
 
     // mission id getter
     public int getMissionID() {
-        return missionID;
+        return this.missionID;
     }
 
     // mission id setter
@@ -45,7 +45,7 @@ public class Mission {
 
     // mission name getter
     public String getMissionName() {
-        return missionName;
+        return this.missionName;
     }
 
     // mission name setter
@@ -55,7 +55,7 @@ public class Mission {
 
     // mission type getter
     public String getMissionType() {
-        return missionType;
+        return this.missionType;
     }
 
     // mission type setter
@@ -65,7 +65,7 @@ public class Mission {
 
     // launch date getter
     public String getLaunchDate() {
-        return launchDate;
+        return this.launchDate;
     }
 
     // launch date setter
@@ -75,7 +75,7 @@ public class Mission {
 
     // mission status getter
     public String getMissionStatus() {
-        return missionStatus;
+        return this.missionStatus;
     }
 
     // mission status setter
@@ -85,7 +85,7 @@ public class Mission {
 
     // mission objectives getter
     public String getMissionObjectives() {
-        return missionObjectives;
+        return this.missionObjectives;
     }
 
     // mission objectives setter
@@ -95,7 +95,7 @@ public class Mission {
 
     // initial fuel level getter
     public int getInitialFuelLevel() {
-        return initialFuelLevel;
+        return this.initialFuelLevel;
     }
 
     // initial fuel level setter
@@ -105,7 +105,7 @@ public class Mission {
 
     // initial location getter
     public String getInitialLocation() {
-        return initialLocation;
+        return this.initialLocation;
     }
 
     // initial location setter
@@ -115,7 +115,7 @@ public class Mission {
 
     // termination date getter
     public String getTerminationDate() {
-        return terminationDate;
+        return this.terminationDate;
     }
 
     // termination date setter
@@ -130,7 +130,7 @@ public class Mission {
 
     // get the spacecraft for this mission
     public Spacecraft getSpacecraft() {
-        return spacecraft;
+        return this.spacecraft;
     }
 
     // add a report to this mission's report list

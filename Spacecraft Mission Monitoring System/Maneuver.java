@@ -31,7 +31,7 @@ public class Maneuver {
 
     // getter and setter for maneuverID
     public int getManeuverID() {
-        return maneuverID;
+        return this.maneuverID;
     }
 
     public void setManeuverID(int maneuverID) {
@@ -40,7 +40,7 @@ public class Maneuver {
 
     // getter and setter for missionID
     public int getMissionID() {
-        return missionID;
+        return this.missionID;
     }
 
     public void setMissionID(int missionID) {
@@ -48,8 +48,8 @@ public class Maneuver {
     }
 
     // getter and setter for employeeID
-    public Integer getEmployeeID() {
-        return employeeID;
+    public int getEmployeeID() {
+        return this.employeeID;
     }
 
     public void setEmployeeID(Integer employeeID) {
@@ -57,8 +57,8 @@ public class Maneuver {
     }
 
     // getter and setter for crewID
-    public Integer getCrewID() {
-        return crewID;
+    public int getCrewID() {
+        return this.crewID;
     }
 
     public void setCrewID(Integer crewID) {
@@ -67,7 +67,7 @@ public class Maneuver {
 
     // getter and setter for maneuverType
     public String getManeuverType() {
-        return maneuverType;
+        return this.maneuverType;
     }
 
     public void setManeuverType(String maneuverType) {
@@ -76,7 +76,7 @@ public class Maneuver {
 
     // getter and setter for maneuverDescription
     public String getManeuverDescription() {
-        return maneuverDescription;
+        return this.maneuverDescription;
     }
 
     public void setManeuverDescription(String maneuverDescription) {

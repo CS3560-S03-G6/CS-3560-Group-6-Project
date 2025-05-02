@@ -1,3 +1,6 @@
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 
 public class MissionReport {
     private int missionReportID;
@@ -92,5 +95,72 @@ public class MissionReport {
 
     public String displayReportSummary() {
         return "Report summary";
+    }
+
+    //Outputs this mission report to a .txt file
+    public void exportReport(){
+        String fileName = "report_" + missionID + ".txt";
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
+            writer.write("MISSION REPORT FOR MISSION ID " + missionID);
+            writer.newLine();
+            writer.write("Report ID: " + missionReportID);
+            writer.newLine();
+            writer.write("Date Generated: " + dateGenerated);
+            writer.newLine();
+            if (executedManeuvers != null) {
+                writer.write("Executed Maneuvers:");
+                writer.newLine();
+                for (Maneuver m : executedManeuvers) {
+                    writer.write("Maneuver ID: " + m.getManeuverID());
+                    writer.newLine();
+                    writer.write("Maneuver Type: " + m.getManeuverType());
+                    writer.newLine();
+                    writer.write("Maneuver Description: " + m.getManeuverDetails());
+                    writer.newLine();
+                    writer.write("Execution Time: " + m.getExecutionTime());
+                    writer.newLine();
+                    writer.write("Fuel Cost: " + m.getFuelCost());
+                    writer.newLine();
+                    writer.write("Status: " + m.getStatus());
+                    writer.newLine();
+                    writer.write("Logged Time: " + m.getLoggedTime());
+                    writer.newLine();
+                    writer.write("Logged By: " + m.getLoggedBy());
+                    writer.newLine();
+                }
+            }
+            else{
+                writer.write("No manuevers have been executed so far.");
+                writer.newLine();
+            }
+            writer.write("Current fuel usage: " + currentFuelUsage);
+            writer.newLine();
+            writer.write("Current fuel level: " + currentFuelLevel);
+            writer.newLine();
+            if (detectedIssues != null) {
+                writer.write("Issues:");
+                writer.newLine();
+                for (Issue issue : detectedIssues) {
+                    writer.write("Issue ID: " + issue.getIssueID());
+                    writer.newLine();
+                    writer.write("Issue Type: " + issue.getIssueType());
+                    writer.newLine();
+                    writer.write("Detection Time: " + issue.getDetectionTime());
+                    writer.newLine();
+                    writer.write("Severity Level: " + issue.getSeverityLevel());
+                    writer.newLine();
+                    writer.write("Alert Triggered: " + issue.getAlertTriggered());
+                    writer.newLine();
+                    writer.write("Resolution Status: " + issue.getResolutionStatus());
+                    writer.newLine();
+                }
+            }
+            else{
+                writer.write("This mission has had no issues so far.");
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

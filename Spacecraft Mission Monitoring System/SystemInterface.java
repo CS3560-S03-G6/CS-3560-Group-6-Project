@@ -28,7 +28,7 @@ public class SystemInterface extends JFrame {
     SystemInterface(String newTitle) {
 
         try {
-            missions = SQLDatabase.getAllMissions(); // ✅ Load mission data here
+            missions = SQLDatabase.getAllMissions(); // Load mission data here
         } catch (Exception e) {
             System.out.println("❌ Failed to load missions: " + e.getMessage());
             missions = new ArrayList<>(); // fallback to avoid null errors

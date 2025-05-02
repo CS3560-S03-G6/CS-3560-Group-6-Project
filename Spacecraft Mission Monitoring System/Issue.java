@@ -66,7 +66,7 @@ public class Issue {
     // getters and setters
 
     public int getIssueID() {
-        return issueID;
+        return this.issueID;
     }
 
     public void setIssueID(int issueID) {
@@ -74,7 +74,7 @@ public class Issue {
     }
 
     public int getMissionID() {
-        return missionID;
+        return this.missionID;
     }
 
     public void setMissionID(int missionID) {
@@ -82,7 +82,7 @@ public class Issue {
     }
 
     public String getIssueType() {
-        return issueType;
+        return this.issueType;
     }
 
     public void setIssueType(String issueType) {
@@ -90,7 +90,7 @@ public class Issue {
     }
 
     public LocalDateTime getDetectionTime() {
-        return detectionTime;
+        return this.detectionTime;
     }
 
     public void setDetectionTime(LocalDateTime detectionTime) {
@@ -98,7 +98,7 @@ public class Issue {
     }
 
     public int getSeverityLevel() {
-        return severityLevel;
+        return this.severityLevel;
     }
 
     public void setSeverityLevel(int severityLevel) {
@@ -106,7 +106,7 @@ public class Issue {
     }
 
     public boolean isAlertTriggered() {
-        return alertTriggered;
+        return this.alertTriggered;
     }
 
     public void setAlertTriggered(boolean alertTriggered) {
@@ -114,7 +114,7 @@ public class Issue {
     }
 
     public String getResolutionStatus() {
-        return resolutionStatus;
+        return this.resolutionStatus;
     }
 
     public void setResolutionStatus(String resolutionStatus) {
