@@ -1,4 +1,4 @@
-public class SpaceCraftCrew {
+public class SpacecraftCrew {
     private int crewID;
     private int missionID;
     private int crewSize;
@@ -6,7 +6,7 @@ public class SpaceCraftCrew {
     private String crewHealthStatus;
 
     // constructor
-    public SpaceCraftCrew(int crewID, int missionID, int crewSize, String crewCommander, String crewHealthStatus) {
+    public SpacecraftCrew(int crewID, int missionID, int crewSize, String crewCommander, String crewHealthStatus) {
         this.crewID = crewID;
         this.missionID = missionID;
         this.crewSize = crewSize;
@@ -59,5 +59,6 @@ public class SpaceCraftCrew {
         this.crewHealthStatus = crewHealthStatus;
     }
 
-    // this class just stores crew info, it doesn't handle logging maneuvers or any mission logic
-} 
+    // this class just stores crew info, it doesn't handle logging maneuvers or any
+    // mission logic
+}

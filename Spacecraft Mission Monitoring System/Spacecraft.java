@@ -1,81 +1,135 @@
+
+import com.sun.jdi.connect.spi.Connection;
+
 public class Spacecraft {
     private int spacecraftID;
     private int missionID;
     private String spacecraftName;
-    private String model;
-    private int thrust;
+    private String spacecraftType;
+    private String manufacturer;
+    private int capacity;
     private int maxFuelCapacity;
+    private int thrustPower;
+    private int weight;
+    private String status;
 
-    // constructor
-    public Spacecraft(int spacecraftID, int missionID, String spacecraftName, String model, int thrust, int maxFuelCapacity) {
+    // Constructor that takes in all necessary fields
+    public Spacecraft(int spacecraftID, int missionID, String spacecraftName, String spacecraftType,
+            String manufacturer, int capacity, int maxFuelCapacity, int thrustPower, int weight, String status) {
         this.spacecraftID = spacecraftID;
         this.missionID = missionID;
         this.spacecraftName = spacecraftName;
-        this.model = model;
-        this.thrust = thrust;
+        this.spacecraftType = spacecraftType;
+        this.manufacturer = manufacturer;
+        this.capacity = capacity;
         this.maxFuelCapacity = maxFuelCapacity;
+        this.thrustPower = thrustPower;
+        this.weight = weight;
+        this.status = status;
     }
 
-    // getter and setter for spacecraftID
+    // Getter for spacecraftID
     public int getSpacecraftID() {
         return spacecraftID;
     }
 
+    // Setter for spacecraftID
     public void setSpacecraftID(int spacecraftID) {
         this.spacecraftID = spacecraftID;
     }
 
-    // getter and setter for missionID
+    // Getter for missionID
     public int getMissionID() {
         return missionID;
     }
 
+    // Setter for missionID
     public void setMissionID(int missionID) {
         this.missionID = missionID;
     }
 
-    // getter and setter for spacecraftName
+    // Getter for spacecraftName
     public String getSpacecraftName() {
         return spacecraftName;
     }
 
+    // Setter for spacecraftName
     public void setSpacecraftName(String spacecraftName) {
         this.spacecraftName = spacecraftName;
     }
 
-    // getter and setter for model
-    public String getModel() {
-        return model;
+    // Getter for spacecraftType
+    public String getSpacecraftType() {
+        return spacecraftType;
     }
 
-    public void setModel(String model) {
-        this.model = model;
+    // Setter for spacecraftType
+    public void setSpacecraftType(String spacecraftType) {
+        this.spacecraftType = spacecraftType;
     }
 
-    // getter and setter for thrust
-    public int getThrust() {
-        return thrust;
+    // Getter for manufacturer
+    public String getManufacturer() {
+        return manufacturer;
     }
 
-    public void setThrust(int thrust) {
-        this.thrust = thrust;
+    // Setter for manufacturer
+    public void setManufacturer(String manufacturer) {
+        this.manufacturer = manufacturer;
     }
 
-    // getter and setter for maxFuelCapacity
+    // Getter for capacity
+    public int getCapacity() {
+        return capacity;
+    }
+
+    // Setter for capacity
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
+    }
+
+    // Getter for maxFuelCapacity
     public int getMaxFuelCapacity() {
         return maxFuelCapacity;
     }
 
+    // Setter for maxFuelCapacity
     public void setMaxFuelCapacity(int maxFuelCapacity) {
         this.maxFuelCapacity = maxFuelCapacity;
     }
 
-    // method to display spacecraft details
-    public void displaySpacecraftDetails() {
-        System.out.println("Spacecraft Details:");
-        System.out.println("Name: " + spacecraftName);
-        System.out.println("Model: " + model);
-        System.out.println("Thrust: " + thrust);
-        System.out.println("Max Fuel Capacity: " + maxFuelCapacity);
+    // Getter for thrustPower
+    public int getThrustPower() {
+        return thrustPower;
     }
-} 
+
+    // Setter for thrustPower
+    public void setThrustPower(int thrustPower) {
+        this.thrustPower = thrustPower;
+    }
+
+    // Getter for weight
+    public int getWeight() {
+        return weight;
+    }
+
+    // Setter for weight
+    public void setWeight(int weight) {
+        this.weight = weight;
+    }
+
+    // Getter for status
+    public String getStatus() {
+        return status;
+    }
+
+    // Setter for status
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String displaySpacecraftDetails() {
+        return "Spacecraft detail ...";
+    }
+
+}

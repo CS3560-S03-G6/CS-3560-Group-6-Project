@@ -1,3 +1,4 @@
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -5,12 +6,12 @@ public class Mission {
     private int missionID;
     private String missionName;
     private String missionType;
-    private int launchDate;
+    private String launchDate;
     private String missionStatus;
     private String missionObjectives;
     private int initialFuelLevel;
     private String initialLocation;
-    private int terminationDate;
+    private String terminationDate;
 
     // mission is tied to one spacecraft
     private Spacecraft spacecraft;
@@ -19,8 +20,8 @@ public class Mission {
     private List<MissionReport> reports;
 
     // constructor for mission
-    public Mission(String missionName, String missionType, int launchDate, String missionStatus,
-                   String missionObjectives, int initialFuelLevel, String initialLocation, int terminationDate) {
+    public Mission(String missionName, String missionType, String launchDate, String missionStatus,
+            String missionObjectives, int initialFuelLevel, String initialLocation, String terminationDate) {
         this.missionName = missionName;
         this.missionType = missionType;
         this.launchDate = launchDate;
@@ -63,12 +64,12 @@ public class Mission {
     }
 
     // launch date getter
-    public int getLaunchDate() {
+    public String getLaunchDate() {
         return launchDate;
     }
 
     // launch date setter
-    public void setLaunchDate(int launchDate) {
+    public void setLaunchDate(String launchDate) {
         this.launchDate = launchDate;
     }
 
@@ -113,12 +114,12 @@ public class Mission {
     }
 
     // termination date getter
-    public int getTerminationDate() {
+    public String getTerminationDate() {
         return terminationDate;
     }
 
     // termination date setter
-    public void setTerminationDate(int terminationDate) {
+    public void setTerminationDate(String terminationDate) {
         this.terminationDate = terminationDate;
     }
 
@@ -144,7 +145,7 @@ public class Mission {
 
     // lets user update mission details like name, type, etc
     public void updateMissionDetails(String newName, String newType, String newObjective,
-                                     int newFuelLevel, String newLocation) {
+            int newFuelLevel, String newLocation) {
         this.missionName = newName;
         this.missionType = newType;
         this.missionObjectives = newObjective;
@@ -153,7 +154,7 @@ public class Mission {
     }
 
     // ends the mission and sets termination date
-    public void terminateMission(int date) {
+    public void terminateMission(String date) {
         this.terminationDate = date;
         this.missionStatus = "Terminated";
     }
@@ -166,10 +167,10 @@ public class Mission {
     // gives a short summary of the mission for quick viewing/searches
     public String displayMissionSummary() {
         return "Mission ID: " + missionID +
-               ", Name: " + missionName +
-               ", Type: " + missionType +
-               ", Status: " + missionStatus +
-               ", Fuel: " + initialFuelLevel + " units";
+                ", Name: " + missionName +
+                ", Type: " + missionType +
+                ", Status: " + missionStatus +
+                ", Fuel: " + initialFuelLevel + " units";
     }
 
     // shows all mission details + spacecraft + reports
@@ -178,6 +179,7 @@ public class Mission {
 
         // mission basic info
         sb.append("Mission Details:\n");
+        sb.append("MissionID: ").append(missionID).append("\n");
         sb.append("Name: ").append(missionName).append("\n");
         sb.append("Type: ").append(missionType).append("\n");
         sb.append("Status: ").append(missionStatus).append("\n");
@@ -185,6 +187,7 @@ public class Mission {
         sb.append("Objectives: ").append(missionObjectives).append("\n");
         sb.append("Initial Fuel: ").append(initialFuelLevel).append(" units\n");
         sb.append("Initial Location: ").append(initialLocation).append("\n");
+        sb.append("Termination Date: ").append(terminationDate).append("\n");
 
         // if there's spacecraft tied to this mission, show it
         if (spacecraft != null) {
@@ -204,4 +207,10 @@ public class Mission {
 
         return sb.toString();
     }
+
+    @Override
+    public String toString() {
+        return missionName;
+    }
+
 }
