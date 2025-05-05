@@ -86,11 +86,14 @@ CREATE TABLE `maneuver` (
   `crewID` int DEFAULT NULL,
   `maneuverType` varchar(100) DEFAULT NULL,
   `maneuverDetails` text,
+<<<<<<< HEAD
   `executionTime` varchar(50) DEFAULT NULL,
+=======
+  `executionTime` varchar(100) DEFAULT NULL,
+>>>>>>> temp-Nic-branch
   `fuelCost` int DEFAULT NULL,
-  `locationChange` varchar(100) DEFAULT NULL,
   `status` varchar(50) DEFAULT NULL,
-  `loggedTime` varchar(50) DEFAULT NULL,
+  `loggedTime` varchar(100) DEFAULT NULL,
   `loggedBy` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`maneuverID`),
   KEY `missionID` (`missionID`),
@@ -98,7 +101,11 @@ CREATE TABLE `maneuver` (
   KEY `crewID` (`crewID`),
   CONSTRAINT `maneuver_ibfk_1` FOREIGN KEY (`missionID`) REFERENCES `mission` (`missionID`),
   CONSTRAINT `maneuver_ibfk_2` FOREIGN KEY (`employeeID`) REFERENCES `flightdirector` (`employeeID`),
+<<<<<<< HEAD
   CONSTRAINT `maneuver_ibfk_3` FOREIGN KEY (`crmaneuverewID`) REFERENCES `spacecraftcrew` (`crewID`)
+=======
+  CONSTRAINT `maneuver_ibfk_3` FOREIGN KEY (`crewID`) REFERENCES `spacecraftcrew` (`crewID`)
+>>>>>>> temp-Nic-branch
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -170,6 +177,7 @@ CREATE TABLE `reportissue` (
   `issueID` int NOT NULL,
   PRIMARY KEY (`missionReportID`,`issueID`),
   KEY `issueID` (`issueID`),
+  `dateGenerated` varchar(50) DEFAULT NULL,
   CONSTRAINT `reportissue_ibfk_1` FOREIGN KEY (`missionReportID`) REFERENCES `missionreport` (`missionReportID`),
   CONSTRAINT `reportissue_ibfk_2` FOREIGN KEY (`issueID`) REFERENCES `issue` (`issueID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -187,6 +195,7 @@ CREATE TABLE `reportmaneuver` (
   `maneuverID` int NOT NULL,
   PRIMARY KEY (`missionReportID`,`maneuverID`),
   KEY `maneuverID` (`maneuverID`),
+  `dateGenerated` varchar(50) DEFAULT NULL,
   CONSTRAINT `reportmaneuver_ibfk_1` FOREIGN KEY (`missionReportID`) REFERENCES `missionreport` (`missionReportID`),
   CONSTRAINT `reportmaneuver_ibfk_2` FOREIGN KEY (`maneuverID`) REFERENCES `maneuver` (`maneuverID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -216,24 +225,9 @@ CREATE TABLE `spacecraft` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `spacecraftcomputersystem`
---
 
-DROP TABLE IF EXISTS `spacecraftcomputersystem`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `spacecraftcomputersystem` (
-  `systemID` int NOT NULL,
-  `spacecraftID` int DEFAULT NULL,
-  `communicationStatus` varchar(100) DEFAULT NULL,
-  PRIMARY KEY (`systemID`),
-  KEY `spacecraftID` (`spacecraftID`),
-  CONSTRAINT `spacecraftcomputersystem_ibfk_1` FOREIGN KEY (`spacecraftID`) REFERENCES `spacecraft` (`spacecraftID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
+-
 -- Table structure for table `spacecraftcrew`
 --
 

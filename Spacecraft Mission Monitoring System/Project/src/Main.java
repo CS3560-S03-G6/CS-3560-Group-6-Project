@@ -1,10 +1,18 @@
-import javax.swing.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
+import java.sql.SQLException;
+import java.io.IOException;
+import java.util.*;
 
 public class Main {
-    public static void main(String[] args) {
-//        SwingUtilities.invokeLater(() -> new TestGUI());
+    public static void main(String[] args) throws SQLException, IOException{
 
-        TestGUI example = new TestGUI("Spacecraft Mission Control System");
-
+        
+        SystemInterface example = new SystemInterface("Spacecraft Mission Control System");
+        
     }
 }

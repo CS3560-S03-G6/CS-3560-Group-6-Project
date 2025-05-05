@@ -40,6 +40,7 @@ INSERT INTO Mission ( employeeID, missionName, missionType, launchDate, missionS
 ( 5, 'OSIRIS-REx', 'Asteroid Sample Return', '2016-09-08', 'Completed', 'Collect samples from asteroid Bennu and return them to Earth.', 8700, 'Cape Canaveral', '2023-09-24');
 
 
+<<<<<<< HEAD
 -- for testing purpose, do NOT run this
 INSERT INTO Mission (missionID, employeeID, missionName, missionType, launchDate, missionStatus, missionObjective, initialFuelLevel, initialLocation, terminationDate) VALUES
 (1, 1, 'Voyager 1', 'Interstellar Probe', '1977-09-05', 'Completed', 'Explore outer planets and interstellar space.', 10000, 'Cape Canaveral', '1989-11-30'),
@@ -53,4 +54,36 @@ INSERT INTO Mission (missionID, employeeID, missionName, missionType, launchDate
 (9, 5, 'James Webb', 'Space Telescope', '2021-12-25', 'Active', 'Observe distant galaxies and exoplanets.', 11000, 'Guiana Space Centre', NULL),
 (10, 5, 'OSIRIS-REx', 'Asteroid Sample Return', '2016-09-08', 'Completed', 'Collect samples from asteroid Bennu and return them to Earth.', 8700, 'Cape Canaveral', '2023-09-24');
  
+=======
+
+-- for flight director
+INSERT INTO flightdirector (employeeID, yearsOfExperience) VALUES
+(1, 5),
+(2,7),
+(4,8);
+
+-- for spacecraftcrew
+INSERT INTO spacecraftcrew (crewID, missionID, crewSize, commander, crewHealthStatus) VALUES
+(1, 1, 5, 'Lena Park', 'Excellent'),
+(2, 2, 3, 'Dmitri Ivanov', 'Good'),
+(3, 3, 4, 'Mei Tanaka', 'Fair'),
+(4, 4, 2, 'Alejandro Torres', 'Excellent');
+
+
+-- issue
+INSERT INTO issue (issueID, missionID, issueType, detectionTime, severityLevel, alertTriggered, resolutionStatus)
+VALUES
+(1, 1, 'Low Fuel', '1989-11-01 10:20 PST', 5, 1, 'Unresolved'),
+(2, 2, 'Failed Maneuver', '1990-06-15 14:45 PST', 4, 1, 'Resolved'),
+(3, 3, 'Data Transmission Error', '2013-03-22 12:00 PST', 3, 0, 'Resolved'),
+(4, 4, 'Navigation Glitch', '2021-11-01 08:15 PST', 2, 0, 'Under Investigation'),
+(5, 5, 'Power Fluctuation', '2013-07-08 09:40 PST', 3, 0, 'Resolved'),
+(6, 6, 'Heat Shield Damage', '2022-12-01 16:10 PST', 4, 1, 'Unresolved'),
+(7, 7, 'Radiation Spike', '2016-04-09 07:30 PST', 3, 1, 'Resolved'),
+(8, 8, 'Sensor Calibration Failure', '2022-01-05 18:20 PST', 2, 0, 'Resolved'),
+(9, 9, 'Thruster Misfire', '2023-05-14 11:50 PST', 4, 1, 'Resolved'),
+(10, 10, 'Telemetry Loss', '2023-10-02 14:05 PST', 3, 1, 'Unresolved');
+
+
+>>>>>>> temp-Nic-branch
 
