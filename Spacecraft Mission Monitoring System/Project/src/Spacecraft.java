@@ -1,4 +1,7 @@
 
+import com.sun.jdi.connect.spi.Connection;
+
+
 public class Spacecraft {
     private int spacecraftID;
     private int missionID;
@@ -124,4 +127,9 @@ public class Spacecraft {
     public void setStatus(String status){
         this.status = status;
     }
+    
+    public String displaySpacecraftDetails(){
+        return "Spacecraft detail ...";
+    }
+
 }

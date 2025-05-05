@@ -1,103 +1,120 @@
+import java.util.List;
 
 public class Issue {
     private int issueID;
     private int missionID;
     private String issueType;
-    private int detectionTime;
+    private String detectionTime; // <-- changed from LocalDateTime to String
     private int severityLevel;
     private boolean alertTriggered;
-    private String[] alertRecipients;
     private String resolutionStatus;
 
-    //Constructor that takes in all necessary fields
-    public Issue(int issueID, int missionID, String issueType, int detectionTime, int severityLevel, boolean alertTriggered, String[] alertRecipients, String resolutionStatus){
+    // constructor
+    public Issue(int issueID, int missionID, String issueType, String detectionTime, int severityLevel,
+                 boolean alertTriggered, String resolutionStatus) {
         this.issueID = issueID;
         this.missionID = missionID;
         this.issueType = issueType;
         this.detectionTime = detectionTime;
         this.severityLevel = severityLevel;
         this.alertTriggered = alertTriggered;
-        this.alertRecipients = alertRecipients;
         this.resolutionStatus = resolutionStatus;
     }
 
-    //Getter for issueID
-    public int getIssueID(){
+    // checks if fuel is critically low based on initial fuel level and maneuver fuel usage
+    public static boolean isFuelCritical(int initialFuelLevel, List<Maneuver> allManeuvers) {
+        int totalFuelUsed = 0;
+        for (Maneuver m : allManeuvers) {
+            totalFuelUsed += m.getFuelCost();
+        }
+        return totalFuelUsed >= initialFuelLevel;
+    }
+
+    // checks if a failed maneuver exists
+    public static boolean hasFailedManeuver(List<Maneuver> allManeuvers) {
+        for (Maneuver m : allManeuvers) {
+            if (m.getStatus().equalsIgnoreCase("failed")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // generates a critical issue if detected
+    public static Issue detectCriticalIssue(int missionID, int initialFuelLevel, List<Maneuver> allManeuvers) {
+        String now = java.time.ZonedDateTime.now(java.time.ZoneId.of("America/Los_Angeles"))
+                         .toString().substring(0, 16).replace("T", " ") + " PST";
+
+        if (isFuelCritical(initialFuelLevel, allManeuvers)) {
+            return new Issue(0, missionID, "Low Fuel", now, 5, true, "Unresolved");
+        }
+
+        if (hasFailedManeuver(allManeuvers)) {
+            return new Issue(0, missionID, "Failed Maneuver", now, 4, true, "Unresolved");
+        }
+
+        return null;
+    }
+
+    // === Getters and setters ===
+
+    public int getIssueID() {
         return issueID;
     }
 
-    //Setter for issueID
-    public void setIssueID(int issueID){
+    public void setIssueID(int issueID) {
         this.issueID = issueID;
     }
 
-    //Getter for missionID
-    public int getMissionID(){
+    public int getMissionID() {
         return missionID;
     }
 
-    //Setter for missionID
-    public void setMissionID(int missionID){
+    public void setMissionID(int missionID) {
         this.missionID = missionID;
     }
 
-    //Getter for issueType
-    public String getIssueType(){
+    public String getIssueType() {
         return issueType;
     }
 
-    //Setter for issueType
-    public void setIssueType(String issueType){
+    public void setIssueType(String issueType) {
         this.issueType = issueType;
     }
 
-    //Getter for detectionTime
-    public int getDetectionTime(){
+    public String getDetectionTime() {
         return detectionTime;
     }
 
-    //Setter for detectionTime
-    public void setDetectionTime(int detectionTime){
+    public void setDetectionTime(String detectionTime) {
         this.detectionTime = detectionTime;
     }
 
-    //Getter for severityLevel
-    public int getSeverityLevel(){
+    public int getSeverityLevel() {
         return severityLevel;
     }
 
-    //Setter for severityLevel
-    public void setSeverityLevel(int severityLevel){
+    public void setSeverityLevel(int severityLevel) {
         this.severityLevel = severityLevel;
     }
 
-    //Getter for alertTriggered
-    public boolean getAlertTriggered(){
+    public boolean isAlertTriggered() {
         return alertTriggered;
     }
 
-    //Setter for alertTriggered
-    public void setAlertTriggered(boolean alertTriggered){
+    public void setAlertTriggered(boolean alertTriggered) {
         this.alertTriggered = alertTriggered;
     }
 
-    //Getter for alertRecipients
-    public String[] getAlertRecipients(){
-        return alertRecipients;
+    public boolean getAlertTriggered() {
+        return alertTriggered;
     }
 
-    //Setter for alertRecipients
-    public void setAlertRecipients(String[] alertRecipients){
-        this.alertRecipients = alertRecipients;
-    }
-
-    //Getter for resolutionStatus
-    public String getResolutionStatus(){
+    public String getResolutionStatus() {
         return resolutionStatus;
     }
 
-    //Setter for resolutionStatus
-    public void setResolutionStatus(String resolutionStatus){
+    public void setResolutionStatus(String resolutionStatus) {
         this.resolutionStatus = resolutionStatus;
     }
 }
