@@ -1,127 +1,176 @@
 
+import java.util.List;
+
 public class Maneuver {
     private int maneuverID;
     private int missionID;
-    private String maneuverType;
-    private String maneuverDetails;
-    private int executionTime;
-    private int fuelCost;
-    private boolean locationChange;
-    private String status;
-    private String loggedBy;
-    private int loggedTime;
+    private Integer employeeID; // can be null if logged by a crew member
+    private Integer crewID;     // can be null if logged by an employee
 
-    //Constructor that takes in all necessary fields
-    public Maneuver(int maneuverID, int missionID, String maneuverType, String maneuverDetails, int executionTime, int fuelCost, boolean locationChange, String status, String loggedBy, int loggedTime){
+    private String maneuverType;
+    private String maneuverDescription;
+    private String executionTime; // stored as string for simplicity
+    private int fuelCost;
+    private String status;
+    private String loggedTime;
+    private String loggedBy;
+
+    // constructor
+    public Maneuver(int maneuverID, int missionID, Integer employeeID, Integer crewID,
+                    String maneuverType, String maneuverDescription, String executionTime,
+                    int fuelCost, String status, String loggedTime, String loggedBy) {
         this.maneuverID = maneuverID;
         this.missionID = missionID;
+        this.employeeID = employeeID;
+        this.crewID = crewID;
         this.maneuverType = maneuverType;
-        this.maneuverDetails = maneuverDetails;
+        this.maneuverDescription = maneuverDescription;
         this.executionTime = executionTime;
         this.fuelCost = fuelCost;
-        this.locationChange = locationChange;
         this.status = status;
-        this.loggedBy = loggedBy;
         this.loggedTime = loggedTime;
+        this.loggedBy = loggedBy;
     }
 
-    //Getter for maneuverID
-    public int getManeuverID(){
+    // getter and setter for maneuverID
+    public int getManeuverID() {
         return maneuverID;
     }
 
-    //Setter for maneuverID
-    public void setManeuverID(int maneuverID){
+    public void setManeuverID(int maneuverID) {
         this.maneuverID = maneuverID;
     }
 
-    //Getter for missionID
-    public int getMissionID(){
+    // getter and setter for missionID
+    public int getMissionID() {
         return missionID;
     }
 
-    //Setter for missionID
-    public void setMissionID(int missionID){
+    public void setMissionID(int missionID) {
         this.missionID = missionID;
     }
 
-    //Getter for maneuverType
-    public String getManeuverType(){
+    // getter and setter for employeeID
+    public Integer getEmployeeID() {
+        return employeeID;
+    }
+
+    public void setEmployeeID(Integer employeeID) {
+        this.employeeID = employeeID;
+    }
+
+    // getter and setter for crewID
+    public Integer getCrewID() {
+        return crewID;
+    }
+
+    public void setCrewID(Integer crewID) {
+        this.crewID = crewID;
+    }
+
+    // getter and setter for maneuverType
+    public String getManeuverType() {
         return maneuverType;
     }
 
-    //Setter for maneuverType
-    public void setManeuverType(String maneuverType){
+    public void setManeuverType(String maneuverType) {
         this.maneuverType = maneuverType;
     }
 
-    //Getter for maneuverDetails
-    public String getManeuverDetails(){
-        return maneuverDetails;
+    // getter and setter for maneuverDescription
+    public String getManeuverDescription() {
+        return maneuverDescription;
     }
 
-    //Setter for maneuverDetails
-    public void setManeuverDetails(String maneuverDetails){
-        this.maneuverDetails = maneuverDetails;
+    public void setManeuverDescription(String maneuverDescription) {
+        this.maneuverDescription = maneuverDescription;
     }
 
-    //Getter for executionTime
-    public int getExecutionTime(){
+    // getter and setter for executionTime
+    public String getExecutionTime() {
         return executionTime;
     }
 
-    //Setter for executionTime
-    public void setExecutionTime(int executionTime){
+    public void setExecutionTime(String executionTime) {
         this.executionTime = executionTime;
     }
 
-    //Getter for fuelCost
-    public int getFuelCost(){
+    // getter and setter for fuelCost
+    public int getFuelCost() {
         return fuelCost;
     }
 
-    //Setter for fuelCost
-    public void setFuelCost(int fuelCost){
+    public void setFuelCost(int fuelCost) {
         this.fuelCost = fuelCost;
     }
 
-    //Getter for locationChange
-    public boolean getLocationChange(){
-        return locationChange;
-    }
-
-    //Setter for locationChange
-    public void setLocationChange(boolean locationChange){
-        this.locationChange = locationChange;
-    }
-
-    //Getter for status
-    public String getStatus(){
+    // getter and setter for status
+    public String getStatus() {
         return status;
     }
 
-    //Setter for status
-    public void setStatus(String status){
+    public void setStatus(String status) {
         this.status = status;
     }
 
-    //Getter for loggedBy
-    public String getLoggedBy(){
-        return loggedBy;
-    }
-
-    //Setter for loggedBy
-    public void setLoggedBy(String loggedBy){
-        this.loggedBy = loggedBy;
-    }
-
-    //Getter for loggedTime
-    public int getLoggedTime(){
+    // getter and setter for loggedTime
+    public String getLoggedTime() {
         return loggedTime;
     }
 
-    //Setter for loggedTime
-    public void setLoggedTime(int loggedTime){
+    public void setLoggedTime(String loggedTime) {
         this.loggedTime = loggedTime;
     }
+
+    // getter and setter for loggedBy
+    public String getLoggedBy() {
+        return loggedBy;
+    }
+
+    public void setLoggedBy(String loggedBy) {
+        this.loggedBy = loggedBy;
+    }
+
+    // shows a short summary of the maneuver info
+    public void displayManeuverSummary() {
+        System.out.println("maneuver id: " + maneuverID);
+        System.out.println("type: " + maneuverType);
+        System.out.println("description: " + maneuverDescription);
+        System.out.println("execution time: " + executionTime);
+        System.out.println("fuel cost: " + fuelCost);
+        System.out.println("status: " + status);
+    }
+    
+    public String getManeuverDetails(){
+          return "Maneuver ID: " + maneuverID + "\n"
+         + "Type: " + maneuverType + "\n"
+         + "Description: " + maneuverDescription + "\n"
+         + "Execution Time: " + executionTime + "\n"
+         + "Fuel Cost: " + fuelCost + "\n"
+         + "Status: " + status;
+    }
+    
+    public String toDisplayString(List<Mission> allMissions) {
+    String missionName = "Unknown";
+    for (Mission m : allMissions) {
+        if (m.getMissionID() == this.missionID) {
+            missionName = m.getMissionName();
+            break;
+        }
+    }
+    return "#" + this.maneuverID + " (Mission " + missionName + ") - " + this.maneuverType + ", " + this.executionTime;
+}
+    @Override
+    public String toString(){
+        return "Maneuver #" + this.maneuverID;
+    }
+
+    // lets someone update a maneuver's key details
+    public void updateManeuver(String newDescription, String newTime, int newFuelCost, String newStatus) {
+        this.maneuverDescription = newDescription;
+        this.executionTime = newTime;
+        this.fuelCost = newFuelCost;
+        this.status = newStatus;
+    }
+    
 }
