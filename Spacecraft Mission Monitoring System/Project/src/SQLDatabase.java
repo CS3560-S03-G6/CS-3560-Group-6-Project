@@ -13,7 +13,7 @@ public class SQLDatabase {
     public static Connection getConnection() throws SQLException {
         String url = "jdbc:mysql://localhost:3306/spacecraft_mission_monitoring_system";
         String username = "root";
-        String password = "root";
+        String password = "CS_3560_MySQLServer!!!";
         return DriverManager.getConnection(url, username, password);
     }
 
