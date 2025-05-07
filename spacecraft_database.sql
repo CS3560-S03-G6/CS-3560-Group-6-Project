@@ -86,11 +86,7 @@ CREATE TABLE `maneuver` (
   `crewID` int DEFAULT NULL,
   `maneuverType` varchar(100) DEFAULT NULL,
   `maneuverDetails` text,
-<<<<<<< HEAD
-  `executionTime` varchar(50) DEFAULT NULL,
-=======
   `executionTime` varchar(100) DEFAULT NULL,
->>>>>>> temp-Nic-branch
   `fuelCost` int DEFAULT NULL,
   `status` varchar(50) DEFAULT NULL,
   `loggedTime` varchar(100) DEFAULT NULL,
@@ -101,11 +97,7 @@ CREATE TABLE `maneuver` (
   KEY `crewID` (`crewID`),
   CONSTRAINT `maneuver_ibfk_1` FOREIGN KEY (`missionID`) REFERENCES `mission` (`missionID`),
   CONSTRAINT `maneuver_ibfk_2` FOREIGN KEY (`employeeID`) REFERENCES `flightdirector` (`employeeID`),
-<<<<<<< HEAD
-  CONSTRAINT `maneuver_ibfk_3` FOREIGN KEY (`crmaneuverewID`) REFERENCES `spacecraftcrew` (`crewID`)
-=======
   CONSTRAINT `maneuver_ibfk_3` FOREIGN KEY (`crewID`) REFERENCES `spacecraftcrew` (`crewID`)
->>>>>>> temp-Nic-branch
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

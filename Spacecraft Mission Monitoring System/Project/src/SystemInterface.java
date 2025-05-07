@@ -67,9 +67,13 @@ public class SystemInterface extends JFrame {
 
         JMenu missionMenu = new JMenu("Mission");
         JMenu maneuverMenu = new JMenu("Maneuver");
+        JMenu employeeMenu = new JMenu("Employee");
+        JMenu systemMenu = new JMenu("System");
 
         menuBar.add(missionMenu);
         menuBar.add(maneuverMenu);
+        menuBar.add(employeeMenu);
+        menuBar.add(systemMenu);
 
         JMenuItem addMission = new JMenuItem("Add a new mission");
         JMenuItem updateMission = new JMenuItem("Update a mission");
@@ -79,6 +83,12 @@ public class SystemInterface extends JFrame {
         JMenuItem scheduleFutureManeuver = new JMenuItem("Schedule a future maneuver");
         JMenuItem updateManeuver = new JMenuItem("Update a maneuver");
         JMenuItem logPastManeuver = new JMenuItem("Log past maneuver");
+        JMenuItem viewEmployees = new JMenuItem("View employees");
+        JMenuItem updateEmployee = new JMenuItem("Update employee");
+        JMenuItem addEmployee = new JMenuItem("Add employee");
+        JMenuItem removeEmployee = new JMenuItem("Remove employee");
+        JMenuItem about = new JMenuItem("About");
+        JMenuItem exit = new JMenuItem("Exit");
 
         missionMenu.add(addMission);
         missionMenu.add(updateMission);
@@ -88,6 +98,10 @@ public class SystemInterface extends JFrame {
         maneuverMenu.add(scheduleFutureManeuver);
         maneuverMenu.add(updateManeuver);
         maneuverMenu.add(logPastManeuver);
+        employeeMenu.add(viewEmployees);
+        employeeMenu.add(updateEmployee);
+        employeeMenu.add(addEmployee);
+        employeeMenu.add(removeEmployee);
 
         addMission.addActionListener(new ActionListener() {
             @Override
@@ -1038,6 +1052,138 @@ private void searchMissionDialog() {
         JPanel bottom = new JPanel();
         bottom.add(submit);
         dialog.add(bottom, BorderLayout.SOUTH);
+        dialog.setVisible(true);
+    }
+
+
+    private void viewEmployeesDialog() {
+        JDialog dialog = new JDialog(this, "Search a Mission", true);
+        dialog.setSize(600, 500);
+        dialog.setLocationRelativeTo(frame);
+        dialog.setLayout(new BorderLayout());
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+        JPanel upperPanel = new JPanel(new GridLayout(1, 0));
+        JLabel searchLabel = new JLabel("Search Mission(s): ");
+        JTextField searchTextField = new JTextField();
+        JButton searchButton = new JButton("Search");
+        JButton viewAll = new JButton("View All");
+
+        upperPanel.add(searchLabel);
+        upperPanel.add(searchTextField);
+        upperPanel.add(searchButton);
+        upperPanel.add(viewAll);
+
+        JPanel middlePanel = new JPanel(new BorderLayout());
+        DefaultListModel<Mission> listContents = new DefaultListModel<>();
+        JList<Mission> list = new JList<>(listContents);
+        list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        JScrollPane scrollPane = new JScrollPane(list);
+        middlePanel.add(scrollPane);
+
+        for (Mission m : missions) {
+            listContents.addElement(m);
+        }
+
+        searchButton.addActionListener(e -> {
+            String searchKey = searchTextField.getText().toLowerCase();
+            listContents.clear();
+            boolean found = false;
+            for (Mission m : missions) {
+                if (m.getMissionName().toLowerCase().contains(searchKey)) {
+                    listContents.addElement(m);
+                    found = true;
+                }
+            }
+            if (!found) {
+                JOptionPane.showMessageDialog(null, "Search returned no results!");
+                viewAll.doClick();
+            }
+        });
+
+        viewAll.addActionListener(e -> {
+            listContents.clear();
+            for (Mission m : missions) {
+                listContents.addElement(m);
+            }
+        });
+
+        JPanel lowerButtonPanel = new JPanel(new GridLayout(1, 0));
+        JButton selectButton = new JButton("Select Entry");
+        JButton cancelButton = new JButton("Cancel");
+
+        selectButton.addActionListener(e -> {
+            Mission selected = list.getSelectedValue();
+            if (selected == null) {
+                JOptionPane.showMessageDialog(this, "Please select a mission from the list.");
+                return;
+            }
+
+            // Build mission details text
+            StringBuilder details = new StringBuilder();
+            details.append("Mission Details:\n");
+            details.append("MissionID: ").append(selected.getMissionID()).append("\n");
+            details.append("Name: ").append(selected.getMissionName()).append("\n");
+            details.append("Type: ").append(selected.getMissionType()).append("\n");
+            details.append("Status: ").append(selected.getMissionStatus()).append("\n");
+            details.append("Launch Date: ").append(selected.getLaunchDate()).append("\n");
+            details.append("Objectives: ").append(selected.getMissionObjectives()).append("\n");
+            details.append("Initial Fuel: ").append(selected.getInitialFuelLevel()).append(" units\n");
+            details.append("Initial Location: ").append(selected.getInitialLocation()).append("\n");
+            details.append("Termination Date: ").append(selected.getTerminationDate()).append("\n");
+
+            JTextArea textArea = new JTextArea(details.toString());
+            textArea.setEditable(false);
+            textArea.setBackground(new JLabel().getBackground());
+
+            JScrollPane scrollPaneInner = new JScrollPane(textArea);
+            scrollPaneInner.setPreferredSize(new Dimension(450, 200));
+
+            JButton exportButton = new JButton("Export Report");
+            exportButton.addActionListener(ev -> {
+                try {
+                    MissionReport report = SQLDatabase.generateMissionReport(selected);
+                    report.exportReport(); // Save default file
+
+                    JOptionPane.showMessageDialog(this,
+                            "Report exported successfully for Mission ID: " + selected.getMissionID(),
+                            "Export Successful", JOptionPane.INFORMATION_MESSAGE);
+
+                    JFileChooser fileChooser = new JFileChooser();
+                    fileChooser.setSelectedFile(new java.io.File("report_mission_" + selected.getMissionID() + ".txt"));
+                    int option = fileChooser.showSaveDialog(dialog);
+
+                    if (option == JFileChooser.APPROVE_OPTION) {
+                        java.io.File file = fileChooser.getSelectedFile();
+                        java.nio.file.Files.copy(
+                                java.nio.file.Paths.get("report_mission_" + selected.getMissionID()+ ".txt"),
+                                file.toPath(),
+                                java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                        );
+                        JOptionPane.showMessageDialog(this, "Report saved successfully.");
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(this, "Failed to export report: " + ex.getMessage(),
+                            "Export Failed", JOptionPane.ERROR_MESSAGE);
+                }
+            });
+
+            JPanel detailsPanel = new JPanel(new BorderLayout());
+            detailsPanel.add(scrollPaneInner, BorderLayout.CENTER);
+            detailsPanel.add(exportButton, BorderLayout.SOUTH);
+
+            JOptionPane.showMessageDialog(this, detailsPanel, "Mission Details", JOptionPane.INFORMATION_MESSAGE);
+        });
+
+        cancelButton.addActionListener(e -> dialog.setVisible(false));
+
+        lowerButtonPanel.add(selectButton);
+        lowerButtonPanel.add(cancelButton);
+
+        dialog.add(upperPanel, BorderLayout.NORTH);
+        dialog.add(middlePanel, BorderLayout.CENTER);
+        dialog.add(lowerButtonPanel, BorderLayout.SOUTH);
         dialog.setVisible(true);
     }
 
