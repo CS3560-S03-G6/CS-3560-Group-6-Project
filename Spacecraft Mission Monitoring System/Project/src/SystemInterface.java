@@ -1,5 +1,6 @@
 
 import com.sun.jdi.connect.spi.Connection;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -105,6 +106,21 @@ public class SystemInterface extends JFrame {
         JMenuItem about = new JMenuItem("About");
         JMenuItem exit = new JMenuItem("Exit");
 
+        addMission.setMnemonic('a');
+        updateMission.setMnemonic('u');
+        searchMission.setMnemonic('s');
+        terminateMission.setMnemonic('t');
+        scheduleImmediateManeuver.setMnemonic('i');
+        scheduleFutureManeuver.setMnemonic('f');
+        updateManeuver.setMnemonic('u');
+        logPastManeuver.setMnemonic('l');
+        viewEmployees.setMnemonic('v');
+        updateEmployee.setMnemonic('u');
+        addEmployee.setMnemonic('a');
+        removeEmployee.setMnemonic('r');
+        about.setMnemonic('a');
+        exit.setMnemonic('e');
+
         missionMenu.add(addMission);
         missionMenu.add(updateMission);
         missionMenu.add(searchMission);
@@ -119,6 +135,7 @@ public class SystemInterface extends JFrame {
         employeeMenu.add(removeEmployee);
         systemMenu.add(about);
         systemMenu.add(exit);
+
 
         addMission.addActionListener(new ActionListener() {
             @Override
@@ -224,8 +241,8 @@ public class SystemInterface extends JFrame {
 
         // Labels and text field definitions for mission attributes
         String[] fieldLabels = {
-            "Employee ID:", "Mission Name:", "Mission Type:", "Launch Date (YYYY-MM-DD):",
-            "Status:", "Objectives:", "Initial Fuel Level:", "Initial Location:", "Termination Date (YYYY-MM-DD):"
+                "Employee ID:", "Mission Name:", "Mission Type:", "Launch Date (YYYY-MM-DD):",
+                "Status:", "Objectives:", "Initial Fuel Level:", "Initial Location:", "Termination Date (YYYY-MM-DD):"
         };
 
         JTextField empIDField = new JTextField();
@@ -240,8 +257,8 @@ public class SystemInterface extends JFrame {
 
         // Group fields into array for easy iteration
         JTextField[] fields = {
-            empIDField, missionNameField, missionTypeField, launchDateField,
-            statusField, objectivesField, fuelLevelField, locationField, terminationDateField
+                empIDField, missionNameField, missionTypeField, launchDateField,
+                statusField, objectivesField, fuelLevelField, locationField, terminationDateField
         };
 
         for (String label : fieldLabels) {
@@ -377,8 +394,8 @@ public class SystemInterface extends JFrame {
         JPanel fieldPanel = new JPanel(new GridLayout(0, 1));
 
         String[] labels = {
-            "Mission Name:", "Mission Type:", "Launch Date:", "Status:",
-            "Objectives:", "Fuel Level:", "Location:", "Termination Date:"
+                "Mission Name:", "Mission Type:", "Launch Date:", "Status:",
+                "Objectives:", "Fuel Level:", "Location:", "Termination Date:"
         };
 
         JTextField nameField = new JTextField();
@@ -391,8 +408,8 @@ public class SystemInterface extends JFrame {
         JTextField terminationField = new JTextField();
 
         JTextField[] fields = {
-            nameField, typeField, launchField, statusField,
-            objectivesField, fuelField, locationField, terminationField
+                nameField, typeField, launchField, statusField,
+                objectivesField, fuelField, locationField, terminationField
         };
 
         for (String l : labels) {
@@ -470,136 +487,136 @@ public class SystemInterface extends JFrame {
         dialog.setVisible(true);
     }
 
-private void searchMissionDialog() {
-    JDialog dialog = new JDialog(this, "Search a Mission", true);
-    dialog.setSize(600, 500);
-    dialog.setLocationRelativeTo(frame);
-    dialog.setLayout(new BorderLayout());
-    dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+    private void searchMissionDialog() {
+        JDialog dialog = new JDialog(this, "Search a Mission", true);
+        dialog.setSize(600, 500);
+        dialog.setLocationRelativeTo(frame);
+        dialog.setLayout(new BorderLayout());
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-    JPanel upperPanel = new JPanel(new GridLayout(1, 0));
-    JLabel searchLabel = new JLabel("Search Mission(s): ");
-    JTextField searchTextField = new JTextField();
-    JButton searchButton = new JButton("Search");
-    JButton viewAll = new JButton("View All");
+        JPanel upperPanel = new JPanel(new GridLayout(1, 0));
+        JLabel searchLabel = new JLabel("Search Mission(s): ");
+        JTextField searchTextField = new JTextField();
+        JButton searchButton = new JButton("Search");
+        JButton viewAll = new JButton("View All");
 
-    upperPanel.add(searchLabel);
-    upperPanel.add(searchTextField);
-    upperPanel.add(searchButton);
-    upperPanel.add(viewAll);
+        upperPanel.add(searchLabel);
+        upperPanel.add(searchTextField);
+        upperPanel.add(searchButton);
+        upperPanel.add(viewAll);
 
-    JPanel middlePanel = new JPanel(new BorderLayout());
-    DefaultListModel<Mission> listContents = new DefaultListModel<>();
-    JList<Mission> list = new JList<>(listContents);
-    list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    JScrollPane scrollPane = new JScrollPane(list);
-    middlePanel.add(scrollPane);
+        JPanel middlePanel = new JPanel(new BorderLayout());
+        DefaultListModel<Mission> listContents = new DefaultListModel<>();
+        JList<Mission> list = new JList<>(listContents);
+        list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        JScrollPane scrollPane = new JScrollPane(list);
+        middlePanel.add(scrollPane);
 
-    for (Mission m : missions) {
-        listContents.addElement(m);
-    }
-
-    searchButton.addActionListener(e -> {
-        String searchKey = searchTextField.getText().toLowerCase();
-        listContents.clear();
-        boolean found = false;
-        for (Mission m : missions) {
-            if (m.getMissionName().toLowerCase().contains(searchKey)) {
-                listContents.addElement(m);
-                found = true;
-            }
-        }
-        if (!found) {
-            JOptionPane.showMessageDialog(null, "Search returned no results!");
-            viewAll.doClick();
-        }
-    });
-
-    viewAll.addActionListener(e -> {
-        listContents.clear();
         for (Mission m : missions) {
             listContents.addElement(m);
         }
-    });
 
-    JPanel lowerButtonPanel = new JPanel(new GridLayout(1, 0));
-    JButton selectButton = new JButton("Select Entry");
-    JButton cancelButton = new JButton("Cancel");
-
-    selectButton.addActionListener(e -> {
-        Mission selected = list.getSelectedValue();
-        if (selected == null) {
-            JOptionPane.showMessageDialog(this, "Please select a mission from the list.");
-            return;
-        }
-
-        // Build mission details text
-        StringBuilder details = new StringBuilder();
-        details.append("Mission Details:\n");
-        details.append("MissionID: ").append(selected.getMissionID()).append("\n");
-        details.append("Name: ").append(selected.getMissionName()).append("\n");
-        details.append("Type: ").append(selected.getMissionType()).append("\n");
-        details.append("Status: ").append(selected.getMissionStatus()).append("\n");
-        details.append("Launch Date: ").append(selected.getLaunchDate()).append("\n");
-        details.append("Objectives: ").append(selected.getMissionObjectives()).append("\n");
-        details.append("Initial Fuel: ").append(selected.getInitialFuelLevel()).append(" units\n");
-        details.append("Initial Location: ").append(selected.getInitialLocation()).append("\n");
-        details.append("Termination Date: ").append(selected.getTerminationDate()).append("\n");
-
-        JTextArea textArea = new JTextArea(details.toString());
-        textArea.setEditable(false);
-        textArea.setBackground(new JLabel().getBackground());
-
-        JScrollPane scrollPaneInner = new JScrollPane(textArea);
-        scrollPaneInner.setPreferredSize(new Dimension(450, 200));
-
-        JButton exportButton = new JButton("Export Report");
-        exportButton.addActionListener(ev -> {
-            try {
-                MissionReport report = SQLDatabase.generateMissionReport(selected);
-                report.exportReport(); // Save default file
-
-                JOptionPane.showMessageDialog(this,
-                        "Report exported successfully for Mission ID: " + selected.getMissionID(),
-                        "Export Successful", JOptionPane.INFORMATION_MESSAGE);
-
-                JFileChooser fileChooser = new JFileChooser();
-                fileChooser.setSelectedFile(new java.io.File("report_mission_" + selected.getMissionID() + ".txt"));
-                int option = fileChooser.showSaveDialog(dialog);
-
-                if (option == JFileChooser.APPROVE_OPTION) {
-                    java.io.File file = fileChooser.getSelectedFile();
-                    java.nio.file.Files.copy(
-                            java.nio.file.Paths.get("report_mission_" + selected.getMissionID()+ ".txt"),
-                            file.toPath(),
-                            java.nio.file.StandardCopyOption.REPLACE_EXISTING
-                    );
-                    JOptionPane.showMessageDialog(this, "Report saved successfully.");
+        searchButton.addActionListener(e -> {
+            String searchKey = searchTextField.getText().toLowerCase();
+            listContents.clear();
+            boolean found = false;
+            for (Mission m : missions) {
+                if (m.getMissionName().toLowerCase().contains(searchKey)) {
+                    listContents.addElement(m);
+                    found = true;
                 }
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                JOptionPane.showMessageDialog(this, "Failed to export report: " + ex.getMessage(),
-                        "Export Failed", JOptionPane.ERROR_MESSAGE);
+            }
+            if (!found) {
+                JOptionPane.showMessageDialog(null, "Search returned no results!");
+                viewAll.doClick();
             }
         });
 
-        JPanel detailsPanel = new JPanel(new BorderLayout());
-        detailsPanel.add(scrollPaneInner, BorderLayout.CENTER);
-        detailsPanel.add(exportButton, BorderLayout.SOUTH);
+        viewAll.addActionListener(e -> {
+            listContents.clear();
+            for (Mission m : missions) {
+                listContents.addElement(m);
+            }
+        });
 
-        JOptionPane.showMessageDialog(this, detailsPanel, "Mission Details", JOptionPane.INFORMATION_MESSAGE);
-    });
+        JPanel lowerButtonPanel = new JPanel(new GridLayout(1, 0));
+        JButton selectButton = new JButton("Select Entry");
+        JButton cancelButton = new JButton("Cancel");
 
-    cancelButton.addActionListener(e -> dialog.setVisible(false));
+        selectButton.addActionListener(e -> {
+            Mission selected = list.getSelectedValue();
+            if (selected == null) {
+                JOptionPane.showMessageDialog(this, "Please select a mission from the list.");
+                return;
+            }
 
-    lowerButtonPanel.add(selectButton);
-    lowerButtonPanel.add(cancelButton);
+            // Build mission details text
+            StringBuilder details = new StringBuilder();
+            details.append("Mission Details:\n");
+            details.append("MissionID: ").append(selected.getMissionID()).append("\n");
+            details.append("Name: ").append(selected.getMissionName()).append("\n");
+            details.append("Type: ").append(selected.getMissionType()).append("\n");
+            details.append("Status: ").append(selected.getMissionStatus()).append("\n");
+            details.append("Launch Date: ").append(selected.getLaunchDate()).append("\n");
+            details.append("Objectives: ").append(selected.getMissionObjectives()).append("\n");
+            details.append("Initial Fuel: ").append(selected.getInitialFuelLevel()).append(" units\n");
+            details.append("Initial Location: ").append(selected.getInitialLocation()).append("\n");
+            details.append("Termination Date: ").append(selected.getTerminationDate()).append("\n");
 
-    dialog.add(upperPanel, BorderLayout.NORTH);
-    dialog.add(middlePanel, BorderLayout.CENTER);
-    dialog.add(lowerButtonPanel, BorderLayout.SOUTH);
-    dialog.setVisible(true);
-}
+            JTextArea textArea = new JTextArea(details.toString());
+            textArea.setEditable(false);
+            textArea.setBackground(new JLabel().getBackground());
+
+            JScrollPane scrollPaneInner = new JScrollPane(textArea);
+            scrollPaneInner.setPreferredSize(new Dimension(450, 200));
+
+            JButton exportButton = new JButton("Export Report");
+            exportButton.addActionListener(ev -> {
+                try {
+                    MissionReport report = SQLDatabase.generateMissionReport(selected);
+                    report.exportReport(); // Save default file
+
+                    JOptionPane.showMessageDialog(this,
+                            "Report exported successfully for Mission ID: " + selected.getMissionID(),
+                            "Export Successful", JOptionPane.INFORMATION_MESSAGE);
+
+                    JFileChooser fileChooser = new JFileChooser();
+                    fileChooser.setSelectedFile(new java.io.File("report_mission_" + selected.getMissionID() + ".txt"));
+                    int option = fileChooser.showSaveDialog(dialog);
+
+                    if (option == JFileChooser.APPROVE_OPTION) {
+                        java.io.File file = fileChooser.getSelectedFile();
+                        java.nio.file.Files.copy(
+                                java.nio.file.Paths.get("report_mission_" + selected.getMissionID() + ".txt"),
+                                file.toPath(),
+                                java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                        );
+                        JOptionPane.showMessageDialog(this, "Report saved successfully.");
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(this, "Failed to export report: " + ex.getMessage(),
+                            "Export Failed", JOptionPane.ERROR_MESSAGE);
+                }
+            });
+
+            JPanel detailsPanel = new JPanel(new BorderLayout());
+            detailsPanel.add(scrollPaneInner, BorderLayout.CENTER);
+            detailsPanel.add(exportButton, BorderLayout.SOUTH);
+
+            JOptionPane.showMessageDialog(this, detailsPanel, "Mission Details", JOptionPane.INFORMATION_MESSAGE);
+        });
+
+        cancelButton.addActionListener(e -> dialog.setVisible(false));
+
+        lowerButtonPanel.add(selectButton);
+        lowerButtonPanel.add(cancelButton);
+
+        dialog.add(upperPanel, BorderLayout.NORTH);
+        dialog.add(middlePanel, BorderLayout.CENTER);
+        dialog.add(lowerButtonPanel, BorderLayout.SOUTH);
+        dialog.setVisible(true);
+    }
 
 
     /**
@@ -718,9 +735,9 @@ private void searchMissionDialog() {
         JPanel fieldPanel = new JPanel(new GridLayout(0, 1));
 
         String[] labels = {
-            "Mission ID:", "Employee ID (optional):", "Crew ID (optional):",
-            "Maneuver Type:", "Maneuver Details:",
-            "Fuel Cost:", "Status:"
+                "Mission ID:", "Employee ID (optional):", "Crew ID (optional):",
+                "Maneuver Type:", "Maneuver Details:",
+                "Fuel Cost:", "Status:"
         };
 
         JTextField missionIDField = new JTextField();
@@ -732,8 +749,8 @@ private void searchMissionDialog() {
         JTextField statusField = new JTextField();
 
         JTextField[] fields = {
-            missionIDField, empIDField, crewIDField, typeField, detailField,
-            fuelCostField, statusField
+                missionIDField, empIDField, crewIDField, typeField, detailField,
+                fuelCostField, statusField
         };
 
         for (String l : labels) {
@@ -822,9 +839,9 @@ private void searchMissionDialog() {
         JPanel fieldPanel = new JPanel(new GridLayout(0, 1));
 
         String[] labels = {
-            "Mission ID:", "Employee ID (optional):", "Crew ID (optional):",
-            "Maneuver Type:", "Maneuver Details:", "Execution Time (YYYY-MM-DD HH:MM PST):",
-            "Fuel Cost:", "Status:"
+                "Mission ID:", "Employee ID (optional):", "Crew ID (optional):",
+                "Maneuver Type:", "Maneuver Details:", "Execution Time (YYYY-MM-DD HH:MM PST):",
+                "Fuel Cost:", "Status:"
         };
 
         JTextField missionIDField = new JTextField();
@@ -837,8 +854,8 @@ private void searchMissionDialog() {
         JTextField statusField = new JTextField();
 
         JTextField[] fields = {
-            missionIDField, empIDField, crewIDField, typeField, detailField,
-            execTimeField, fuelCostField, statusField
+                missionIDField, empIDField, crewIDField, typeField, detailField,
+                execTimeField, fuelCostField, statusField
         };
 
         for (String l : labels) {
