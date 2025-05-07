@@ -44,6 +44,44 @@ public class SQLDatabase {
         return missions;
     }
 
+
+
+    public static int phoneToInt(String string) {
+        String returnString = "";
+
+        for (int i = 0; i < string.length(); i++) {
+            if (Character.isDigit(string.charAt(i))) {
+                returnString = returnString + string.charAt(i);
+            }
+        }
+
+        return Integer.parseInt(returnString);
+    }
+    public static List<Employee> getAllEmployees() {
+        List<Employee> employees = new ArrayList<>();
+
+        try (Connection conn = getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery("SELECT * FROM employee")) {
+
+            while (rs.next()) {
+                Employee e = new Employee(
+                        rs.getInt("employeeID"),
+                        rs.getString("name"),
+                        rs.getString("role"),
+                        rs.getString("workEmail"),
+                        phoneToInt(rs.getString("phoneNumber")),
+                        rs.getString("Location")
+                );
+                e.setEmployeeID(rs.getInt("employeeID"));
+                employees.add(e);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return employees;
+    }
+
+
     public static List<Maneuver> getAllManeuvers() {
         List<Maneuver> maneuvers = new ArrayList<>();
         try (Connection conn = getConnection()) {

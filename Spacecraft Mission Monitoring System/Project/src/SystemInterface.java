@@ -8,12 +8,14 @@ import java.awt.Image;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
 import java.util.*;
 import java.sql.*;
 
 public class SystemInterface extends JFrame {
 
     private List<Mission> missions;
+    private List<Employee> employees;
 
     String title = "Untitled";
     JFrame frame;
@@ -33,6 +35,14 @@ public class SystemInterface extends JFrame {
         } catch (Exception e) {
             System.out.println("❌ Failed to load missions: " + e.getMessage());
             missions = new ArrayList<>(); // fallback to avoid null errors
+        }
+
+
+        try {
+            this.employees = SQLDatabase.getAllEmployees(); // ✅ Load employee data here
+        } catch (Exception e) {
+            System.out.println("❌ Failed to load missions: " + e.getMessage());
+            employees = new ArrayList<>(); // fallback to avoid null errors
         }
 
         this.frame = new JFrame();
@@ -70,6 +80,11 @@ public class SystemInterface extends JFrame {
         JMenu employeeMenu = new JMenu("Employee");
         JMenu systemMenu = new JMenu("System");
 
+        missionMenu.setMnemonic('M');
+        maneuverMenu.setMnemonic('a');
+        employeeMenu.setMnemonic('E');
+        systemMenu.setMnemonic('S');
+
         menuBar.add(missionMenu);
         menuBar.add(maneuverMenu);
         menuBar.add(employeeMenu);
@@ -102,6 +117,8 @@ public class SystemInterface extends JFrame {
         employeeMenu.add(updateEmployee);
         employeeMenu.add(addEmployee);
         employeeMenu.add(removeEmployee);
+        systemMenu.add(about);
+        systemMenu.add(exit);
 
         addMission.addActionListener(new ActionListener() {
             @Override
@@ -155,6 +172,29 @@ public class SystemInterface extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 logPastManeuverDialog();
+            }
+        });
+
+
+        viewEmployees.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                viewEmployeesDialog();
+            }
+        });
+
+
+        about.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(frame, "CS 3560 Final Project - Space operation subsystem\n\nGroup 6 Members: \n  -Joshua Boucher\n  -Julianna Arzola\n  -Nicholas Magtangob\n  -Sonia Pandey\n -Thong Nguyen");
+            }
+        });
+
+        exit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
             }
         });
 
@@ -1057,14 +1097,14 @@ private void searchMissionDialog() {
 
 
     private void viewEmployeesDialog() {
-        JDialog dialog = new JDialog(this, "Search a Mission", true);
+        JDialog dialog = new JDialog(this, "Employees", true);
         dialog.setSize(600, 500);
         dialog.setLocationRelativeTo(frame);
         dialog.setLayout(new BorderLayout());
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
         JPanel upperPanel = new JPanel(new GridLayout(1, 0));
-        JLabel searchLabel = new JLabel("Search Mission(s): ");
+        JLabel searchLabel = new JLabel("Search Employee(s): ");
         JTextField searchTextField = new JTextField();
         JButton searchButton = new JButton("Search");
         JButton viewAll = new JButton("View All");
@@ -1075,23 +1115,23 @@ private void searchMissionDialog() {
         upperPanel.add(viewAll);
 
         JPanel middlePanel = new JPanel(new BorderLayout());
-        DefaultListModel<Mission> listContents = new DefaultListModel<>();
-        JList<Mission> list = new JList<>(listContents);
+        DefaultListModel<Employee> listContents = new DefaultListModel<>();
+        JList<Employee> list = new JList<>(listContents);
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         JScrollPane scrollPane = new JScrollPane(list);
         middlePanel.add(scrollPane);
 
-        for (Mission m : missions) {
-            listContents.addElement(m);
+        for (Employee e : employees) {
+            listContents.addElement(e);
         }
 
         searchButton.addActionListener(e -> {
             String searchKey = searchTextField.getText().toLowerCase();
             listContents.clear();
             boolean found = false;
-            for (Mission m : missions) {
-                if (m.getMissionName().toLowerCase().contains(searchKey)) {
-                    listContents.addElement(m);
+            for (Employee emp : employees) {
+                if (emp.getName().toLowerCase().contains(searchKey)) {
+                    listContents.addElement(emp);
                     found = true;
                 }
             }
@@ -1103,34 +1143,31 @@ private void searchMissionDialog() {
 
         viewAll.addActionListener(e -> {
             listContents.clear();
-            for (Mission m : missions) {
-                listContents.addElement(m);
+            for (Employee emp : employees) {
+                listContents.addElement(emp);
             }
         });
 
         JPanel lowerButtonPanel = new JPanel(new GridLayout(1, 0));
-        JButton selectButton = new JButton("Select Entry");
-        JButton cancelButton = new JButton("Cancel");
+        JButton selectButton = new JButton("View Details");
+        JButton cancelButton = new JButton("Exit");
 
         selectButton.addActionListener(e -> {
-            Mission selected = list.getSelectedValue();
+            Employee selected = list.getSelectedValue();
             if (selected == null) {
-                JOptionPane.showMessageDialog(this, "Please select a mission from the list.");
+                JOptionPane.showMessageDialog(this, "Please select an employee from the list.");
                 return;
             }
 
             // Build mission details text
             StringBuilder details = new StringBuilder();
-            details.append("Mission Details:\n");
-            details.append("MissionID: ").append(selected.getMissionID()).append("\n");
-            details.append("Name: ").append(selected.getMissionName()).append("\n");
-            details.append("Type: ").append(selected.getMissionType()).append("\n");
-            details.append("Status: ").append(selected.getMissionStatus()).append("\n");
-            details.append("Launch Date: ").append(selected.getLaunchDate()).append("\n");
-            details.append("Objectives: ").append(selected.getMissionObjectives()).append("\n");
-            details.append("Initial Fuel: ").append(selected.getInitialFuelLevel()).append(" units\n");
-            details.append("Initial Location: ").append(selected.getInitialLocation()).append("\n");
-            details.append("Termination Date: ").append(selected.getTerminationDate()).append("\n");
+            details.append("Employee Details:\n");
+            details.append("EmployeeID: ").append(selected.getEmployeeID()).append("\n");
+            details.append("Name: ").append(selected.getName()).append("\n");
+            details.append("Role: ").append(selected.getRole()).append("\n");
+            details.append("Email: ").append(selected.getEMail()).append("\n");
+            details.append("Phone: ").append(selected.getPhoneNumber()).append("\n");
+            details.append("Location: ").append(selected.getLocation()).append("\n");
 
             JTextArea textArea = new JTextArea(details.toString());
             textArea.setEditable(false);
@@ -1139,41 +1176,10 @@ private void searchMissionDialog() {
             JScrollPane scrollPaneInner = new JScrollPane(textArea);
             scrollPaneInner.setPreferredSize(new Dimension(450, 200));
 
-            JButton exportButton = new JButton("Export Report");
-            exportButton.addActionListener(ev -> {
-                try {
-                    MissionReport report = SQLDatabase.generateMissionReport(selected);
-                    report.exportReport(); // Save default file
-
-                    JOptionPane.showMessageDialog(this,
-                            "Report exported successfully for Mission ID: " + selected.getMissionID(),
-                            "Export Successful", JOptionPane.INFORMATION_MESSAGE);
-
-                    JFileChooser fileChooser = new JFileChooser();
-                    fileChooser.setSelectedFile(new java.io.File("report_mission_" + selected.getMissionID() + ".txt"));
-                    int option = fileChooser.showSaveDialog(dialog);
-
-                    if (option == JFileChooser.APPROVE_OPTION) {
-                        java.io.File file = fileChooser.getSelectedFile();
-                        java.nio.file.Files.copy(
-                                java.nio.file.Paths.get("report_mission_" + selected.getMissionID()+ ".txt"),
-                                file.toPath(),
-                                java.nio.file.StandardCopyOption.REPLACE_EXISTING
-                        );
-                        JOptionPane.showMessageDialog(this, "Report saved successfully.");
-                    }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                    JOptionPane.showMessageDialog(this, "Failed to export report: " + ex.getMessage(),
-                            "Export Failed", JOptionPane.ERROR_MESSAGE);
-                }
-            });
-
             JPanel detailsPanel = new JPanel(new BorderLayout());
             detailsPanel.add(scrollPaneInner, BorderLayout.CENTER);
-            detailsPanel.add(exportButton, BorderLayout.SOUTH);
 
-            JOptionPane.showMessageDialog(this, detailsPanel, "Mission Details", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, detailsPanel, "Employee Details", JOptionPane.INFORMATION_MESSAGE);
         });
 
         cancelButton.addActionListener(e -> dialog.setVisible(false));
