@@ -1,4 +1,5 @@
 /*import com.mysql.cj.jdbc.exceptions.SQLError;*/
+
 import java.sql.*;
 import java.util.*;
 
@@ -45,8 +46,7 @@ public class SQLDatabase {
     }
 
 
-
-    public static int phoneToInt(String string) {
+    public static int stringToInt(String string) {
         String returnString = "";
 
         for (int i = 0; i < string.length(); i++) {
@@ -57,6 +57,7 @@ public class SQLDatabase {
 
         return Integer.parseInt(returnString);
     }
+
     public static List<Employee> getAllEmployees() {
         List<Employee> employees = new ArrayList<>();
 
@@ -68,7 +69,7 @@ public class SQLDatabase {
                         rs.getString("name"),
                         rs.getString("role"),
                         rs.getString("workEmail"),
-                        phoneToInt(rs.getString("phoneNumber")),
+                        stringToInt(rs.getString("phoneNumber")),
                         rs.getString("Location")
                 );
                 e.setEmployeeID(rs.getInt("employeeID"));
@@ -114,8 +115,8 @@ public class SQLDatabase {
      * true if insertion is successful, false otherwise.
      */
     public static boolean insertMission(int employeeID, String name, String type, String launchDate,
-            String status, String objective, int fuelLevel,
-            String location, String terminationDate) {
+                                        String status, String objective, int fuelLevel,
+                                        String location, String terminationDate) {
 
         String checkSQL = "SELECT COUNT(*) FROM employee WHERE employeeID = ?";
         String insertSQL = "INSERT INTO mission (employeeID, missionName, missionType, launchDate, missionStatus, missionObjective, initialFuelLevel, initialLocation, terminationDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -152,9 +153,39 @@ public class SQLDatabase {
         }
     }
 
+
+    public static boolean insertEmployee(String name, String role, String email, int phone, String location) {
+        String insertSQL = "INSERT INTO employee (employeeID, name, role, workEmail, phoneNumber, location) VALUES (?, ?, ?, ?, ?, ?)";
+        String getLastEmployeeIDSQL = "SELECT employeeID FROM employee ORDER BY employeeID DESC";
+
+        try (Connection conn = getConnection()) {
+            // Insert the employee
+            PreparedStatement statement = conn.prepareStatement(getLastEmployeeIDSQL);
+            ResultSet results = statement.executeQuery();
+            results.next();
+            int newID = results.getInt("employeeID") + 1;
+
+            PreparedStatement stmt = conn.prepareStatement(insertSQL);
+
+            stmt.setInt(1, newID);
+            stmt.setString(2, name);
+            stmt.setString(3, role);
+            stmt.setString(4, email);
+            stmt.setInt(5, phone);
+            stmt.setInt(6, stringToInt(location));
+
+            stmt.executeUpdate();
+            return true;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public static boolean updateMissionByID(int missionID, String name, String type, String launch,
-            String status, String objectives, int fuel,
-            String location, String termination) {
+                                            String status, String objectives, int fuel,
+                                            String location, String termination) {
         String sql = "UPDATE mission SET missionName=?, missionType=?, launchDate=?, missionStatus=?, "
                 + "missionObjective=?, initialFuelLevel=?, initialLocation=?, terminationDate=? "
                 + "WHERE missionID=?";
@@ -205,123 +236,123 @@ public class SQLDatabase {
     }
 
     public static MissionReport generateMissionReport(Mission mission) {
-    int missionID = mission.getMissionID();
-    int reportID = (int) (Math.random() * 100000);
+        int missionID = mission.getMissionID();
+        int reportID = (int) (Math.random() * 100000);
 
-    String dateGenerated = java.time.ZonedDateTime.now(java.time.ZoneId.of("America/Los_Angeles"))
-            .toString().substring(0, 16).replace("T", " ") + " PST";
+        String dateGenerated = java.time.ZonedDateTime.now(java.time.ZoneId.of("America/Los_Angeles"))
+                .toString().substring(0, 16).replace("T", " ") + " PST";
 
-    List<Maneuver> maneuvers = new ArrayList<>();
-    List<Issue> issues = new ArrayList<>();
-    int fuelUsed = 0;
-    int fuelLevel = 0;
+        List<Maneuver> maneuvers = new ArrayList<>();
+        List<Issue> issues = new ArrayList<>();
+        int fuelUsed = 0;
+        int fuelLevel = 0;
 
-    try (Connection conn = getConnection()) {
-        // === Ensure unique missionReportID ===
-        while (true) {
-            PreparedStatement checkStmt = conn.prepareStatement("SELECT COUNT(*) FROM missionreport WHERE missionReportID = ?");
-            checkStmt.setInt(1, reportID);
-            ResultSet rs = checkStmt.executeQuery();
-            rs.next();
-            if (rs.getInt(1) == 0) break; // Unique found
-            reportID = (int) (Math.random() * 100000); // Try again
-        }
+        try (Connection conn = getConnection()) {
+            // === Ensure unique missionReportID ===
+            while (true) {
+                PreparedStatement checkStmt = conn.prepareStatement("SELECT COUNT(*) FROM missionreport WHERE missionReportID = ?");
+                checkStmt.setInt(1, reportID);
+                ResultSet rs = checkStmt.executeQuery();
+                rs.next();
+                if (rs.getInt(1) == 0) break; // Unique found
+                reportID = (int) (Math.random() * 100000); // Try again
+            }
 
-        // === Get Executed Maneuvers ===
-        PreparedStatement mStmt = conn.prepareStatement("SELECT * FROM maneuver WHERE missionID = ?");
-        mStmt.setInt(1, missionID);
-        ResultSet mRs = mStmt.executeQuery();
-        while (mRs.next()) {
-            Maneuver m = new Maneuver(
-                mRs.getInt("maneuverID"),
-                mRs.getInt("missionID"),
-                (Integer) mRs.getObject("employeeID"),
-                (Integer) mRs.getObject("crewID"),
-                mRs.getString("maneuverType"),
-                mRs.getString("maneuverDetails"),
-                mRs.getString("executionTime"),
-                mRs.getInt("fuelCost"),
-                mRs.getString("status"),
-                mRs.getString("loggedTime"),
-                mRs.getString("loggedBy")
+            // === Get Executed Maneuvers ===
+            PreparedStatement mStmt = conn.prepareStatement("SELECT * FROM maneuver WHERE missionID = ?");
+            mStmt.setInt(1, missionID);
+            ResultSet mRs = mStmt.executeQuery();
+            while (mRs.next()) {
+                Maneuver m = new Maneuver(
+                        mRs.getInt("maneuverID"),
+                        mRs.getInt("missionID"),
+                        (Integer) mRs.getObject("employeeID"),
+                        (Integer) mRs.getObject("crewID"),
+                        mRs.getString("maneuverType"),
+                        mRs.getString("maneuverDetails"),
+                        mRs.getString("executionTime"),
+                        mRs.getInt("fuelCost"),
+                        mRs.getString("status"),
+                        mRs.getString("loggedTime"),
+                        mRs.getString("loggedBy")
+                );
+                maneuvers.add(m);
+                fuelUsed += m.getFuelCost();
+            }
+
+            // === Get Issues ===
+            PreparedStatement iStmt = conn.prepareStatement("SELECT * FROM issue WHERE missionID = ?");
+            iStmt.setInt(1, missionID);
+            ResultSet iRs = iStmt.executeQuery();
+            while (iRs.next()) {
+                Issue issue = new Issue(
+                        iRs.getInt("issueID"),
+                        iRs.getInt("missionID"),
+                        iRs.getString("issueType"),
+                        iRs.getString("detectionTime"),
+                        iRs.getInt("severityLevel"),
+                        iRs.getBoolean("alertTriggered"),
+                        iRs.getString("resolutionStatus")
+                );
+                issues.add(issue);
+            }
+
+            // === Get Current Fuel Level ===
+            PreparedStatement fuelStmt = conn.prepareStatement("SELECT initialFuelLevel FROM mission WHERE missionID = ?");
+            fuelStmt.setInt(1, missionID);
+            ResultSet fRs = fuelStmt.executeQuery();
+            if (fRs.next()) {
+                int initialFuel = fRs.getInt("initialFuelLevel");
+                fuelLevel = initialFuel - fuelUsed;
+            }
+
+            // === INSERT into missionreport ===
+            PreparedStatement insertReport = conn.prepareStatement(
+                    "INSERT INTO missionreport (missionReportID, missionID, dateGenerated) VALUES (?, ?, ?)"
             );
-            maneuvers.add(m);
-            fuelUsed += m.getFuelCost();
-        }
+            insertReport.setInt(1, reportID);
+            insertReport.setInt(2, missionID);
+            insertReport.setString(3, dateGenerated);
+            insertReport.executeUpdate();
 
-        // === Get Issues ===
-        PreparedStatement iStmt = conn.prepareStatement("SELECT * FROM issue WHERE missionID = ?");
-        iStmt.setInt(1, missionID);
-        ResultSet iRs = iStmt.executeQuery();
-        while (iRs.next()) {
-            Issue issue = new Issue(
-                iRs.getInt("issueID"),
-                iRs.getInt("missionID"),
-                iRs.getString("issueType"),
-                iRs.getString("detectionTime"),
-                iRs.getInt("severityLevel"),
-                iRs.getBoolean("alertTriggered"),
-                iRs.getString("resolutionStatus")
+            // === INSERT into reportmaneuver ===
+            PreparedStatement insertManeuver = conn.prepareStatement(
+                    "INSERT INTO reportmaneuver (missionReportID, maneuverID, dateGenerated) VALUES (?, ?, ?)"
             );
-            issues.add(issue);
+            for (Maneuver m : maneuvers) {
+                insertManeuver.setInt(1, reportID);
+                insertManeuver.setInt(2, m.getManeuverID());
+                insertManeuver.setString(3, dateGenerated);
+                insertManeuver.addBatch();
+            }
+            insertManeuver.executeBatch();
+
+            // === INSERT into reportissue ===
+            PreparedStatement insertIssue = conn.prepareStatement(
+                    "INSERT INTO reportissue (missionReportID, issueID, dateGenerated) VALUES (?, ?, ?)"
+            );
+            for (Issue i : issues) {
+                insertIssue.setInt(1, reportID);
+                insertIssue.setInt(2, i.getIssueID());
+                insertIssue.setString(3, dateGenerated);
+                insertIssue.addBatch();
+            }
+            insertIssue.executeBatch();
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        // === Get Current Fuel Level ===
-        PreparedStatement fuelStmt = conn.prepareStatement("SELECT initialFuelLevel FROM mission WHERE missionID = ?");
-        fuelStmt.setInt(1, missionID);
-        ResultSet fRs = fuelStmt.executeQuery();
-        if (fRs.next()) {
-            int initialFuel = fRs.getInt("initialFuelLevel");
-            fuelLevel = initialFuel - fuelUsed;
-        }
-
-        // === INSERT into missionreport ===
-        PreparedStatement insertReport = conn.prepareStatement(
-            "INSERT INTO missionreport (missionReportID, missionID, dateGenerated) VALUES (?, ?, ?)"
+        return new MissionReport(
+                reportID,
+                missionID,
+                dateGenerated,
+                maneuvers.toArray(new Maneuver[0]),
+                fuelUsed,
+                fuelLevel,
+                issues.toArray(new Issue[0])
         );
-        insertReport.setInt(1, reportID);
-        insertReport.setInt(2, missionID);
-        insertReport.setString(3, dateGenerated);
-        insertReport.executeUpdate();
-
-        // === INSERT into reportmaneuver ===
-        PreparedStatement insertManeuver = conn.prepareStatement(
-            "INSERT INTO reportmaneuver (missionReportID, maneuverID, dateGenerated) VALUES (?, ?, ?)"
-        );
-        for (Maneuver m : maneuvers) {
-            insertManeuver.setInt(1, reportID);
-            insertManeuver.setInt(2, m.getManeuverID());
-            insertManeuver.setString(3, dateGenerated);
-            insertManeuver.addBatch();
-        }
-        insertManeuver.executeBatch();
-
-        // === INSERT into reportissue ===
-        PreparedStatement insertIssue = conn.prepareStatement(
-            "INSERT INTO reportissue (missionReportID, issueID, dateGenerated) VALUES (?, ?, ?)"
-        );
-        for (Issue i : issues) {
-            insertIssue.setInt(1, reportID);
-            insertIssue.setInt(2, i.getIssueID());
-            insertIssue.setString(3, dateGenerated);
-            insertIssue.addBatch();
-        }
-        insertIssue.executeBatch();
-
-    } catch (Exception e) {
-        e.printStackTrace();
     }
-
-    return new MissionReport(
-        reportID,
-        missionID,
-        dateGenerated,
-        maneuvers.toArray(new Maneuver[0]),
-        fuelUsed,
-        fuelLevel,
-        issues.toArray(new Issue[0])
-    );
-}
 
 
     public static boolean insertImmediateManeuver(
@@ -375,8 +406,8 @@ public class SQLDatabase {
 
             PreparedStatement stmt = conn.prepareStatement(
                     "INSERT INTO maneuver (missionID, employeeID, crewID, maneuverType, maneuverDetails, "
-                    + "executionTime, fuelCost, status, loggedTime, loggedBy) "
-                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                            + "executionTime, fuelCost, status, loggedTime, loggedBy) "
+                            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
             );
 
             stmt.setInt(1, missionID);
@@ -455,8 +486,8 @@ public class SQLDatabase {
 
             PreparedStatement stmt = conn.prepareStatement(
                     "INSERT INTO maneuver (missionID, employeeID, crewID, maneuverType, maneuverDetails, "
-                    + "executionTime, fuelCost, status, loggedTime, loggedBy) "
-                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                            + "executionTime, fuelCost, status, loggedTime, loggedBy) "
+                            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
             );
 
             stmt.setInt(1, missionID);
@@ -549,8 +580,8 @@ public class SQLDatabase {
             // Perform update
             PreparedStatement stmt = conn.prepareStatement(
                     "UPDATE maneuver SET missionID = ?, employeeID = ?, crewID = ?, maneuverType = ?, "
-                    + "maneuverDetails = ?, executionTime = ?, fuelCost = ?, status = ?, loggedTime = ?, loggedBy = ? "
-                    + "WHERE maneuverID = ?"
+                            + "maneuverDetails = ?, executionTime = ?, fuelCost = ?, status = ?, loggedTime = ?, loggedBy = ? "
+                            + "WHERE maneuverID = ?"
             );
 
             stmt.setInt(1, missionID);

@@ -1,6 +1,3 @@
-
-import com.sun.jdi.connect.spi.Connection;
-
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -11,7 +8,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.util.*;
-import java.sql.*;
 
 public class SystemInterface extends JFrame {
 
@@ -204,6 +200,14 @@ public class SystemInterface extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 updateEmployeeDialog();
+            }
+        });
+
+
+        addEmployee.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                addEmployeeDialog();
             }
         });
 
@@ -1310,7 +1314,7 @@ public class SystemInterface extends JFrame {
                 locationField.setText(selected.getLocation());
             }
         });
-        
+
         // ===== Bottom Panel: Submit/Cancel Buttons =====
         JPanel buttonPanel = new JPanel(new GridLayout(1, 2));
         JButton submitButton = new JButton("Submit");
@@ -1351,6 +1355,84 @@ public class SystemInterface extends JFrame {
         buttonPanel.add(cancelButton);
         dialog.add(buttonPanel, BorderLayout.SOUTH);
 
+        dialog.setVisible(true);
+    }
+
+
+    private void addEmployeeDialog() {
+        JDialog dialog = new JDialog(this, "Add an Employee", true);
+        dialog.setSize(600, 500);
+        dialog.setLocationRelativeTo(frame);
+        dialog.setLayout(new BorderLayout());
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+        // ========== Label + Input Panels ==========
+        JPanel labelPanel = new JPanel(new GridLayout(0, 1));
+        JPanel fieldPanel = new JPanel(new GridLayout(0, 1));
+
+        // Labels and text field definitions for employee attributes
+        String[] fieldLabels = {"Employee Name:", "Role:", "Email:", "Phone:", "Location:"};
+
+        JTextField nameField = new JTextField();
+        JTextField roleField = new JTextField();
+        JTextField emailField = new JTextField();
+        JTextField phoneField = new JTextField();
+        JTextField locationField = new JTextField();
+
+        // Group fields into array for easy iteration
+        JTextField[] fields = {nameField, roleField, emailField, phoneField, locationField};
+
+        for (String label : fieldLabels) {
+            labelPanel.add(new JLabel(label));
+        }
+        for (JTextField field : fields) {
+            fieldPanel.add(field);
+        }
+
+        JPanel centerPanel = new JPanel(new GridLayout(0, 2));
+        centerPanel.add(labelPanel);
+        centerPanel.add(fieldPanel);
+        dialog.add(centerPanel, BorderLayout.CENTER);
+
+        // ========== Button Panel ==========
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 2));
+        JButton submitButton = new JButton("Submit");
+        JButton cancelButton = new JButton("Cancel");
+
+        cancelButton.addActionListener(e -> dialog.dispose());
+
+        // ===== Submit Button Logic =====
+        submitButton.addActionListener(e -> {
+            try {
+                String employeeName = nameField.getText().trim();
+                String role = roleField.getText().trim();
+                String email = emailField.getText().trim();
+                int phoneNumber = SQLDatabase.stringToInt(phoneField.getText().trim());
+                String location = locationField.getText().trim();
+
+                // Insert employee via SQLDatabase helper
+                boolean success = SQLDatabase.insertEmployee(employeeName, role, email, phoneNumber, location
+                );
+
+                if (success) {
+                    employees = SQLDatabase.getAllEmployees(); // Refresh mission list
+                    JOptionPane.showMessageDialog(dialog, "Employee successfully added!");
+                    dialog.dispose();
+                } else {
+                    JOptionPane.showMessageDialog(dialog, "Employee ID not found.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(dialog, "Please input a valid phone number", "Input Error", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(dialog, "Database Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        buttonPanel.add(submitButton);
+        buttonPanel.add(cancelButton);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
         dialog.setVisible(true);
     }
 
