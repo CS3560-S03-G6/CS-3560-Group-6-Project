@@ -111,9 +111,9 @@ public class SystemInterface extends JFrame {
         updateManeuver.setMnemonic('u');
         logPastManeuver.setMnemonic('l');
         viewEmployees.setMnemonic('v');
-        updateEmployee.setMnemonic('u');
-        addEmployee.setMnemonic('a');
-        removeEmployee.setMnemonic('r');
+//        updateEmployee.setMnemonic('u');
+//        addEmployee.setMnemonic('a');
+//        removeEmployee.setMnemonic('r');
         about.setMnemonic('a');
         exit.setMnemonic('e');
 
@@ -126,9 +126,9 @@ public class SystemInterface extends JFrame {
         maneuverMenu.add(updateManeuver);
         maneuverMenu.add(logPastManeuver);
         employeeMenu.add(viewEmployees);
-        employeeMenu.add(updateEmployee);
-        employeeMenu.add(addEmployee);
-        employeeMenu.add(removeEmployee);
+//        employeeMenu.add(updateEmployee);
+//        employeeMenu.add(addEmployee);
+//        employeeMenu.add(removeEmployee);
         systemMenu.add(about);
         systemMenu.add(exit);
 
@@ -196,20 +196,20 @@ public class SystemInterface extends JFrame {
             }
         });
 
-        updateEmployee.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                updateEmployeeDialog();
-            }
-        });
+//        updateEmployee.addActionListener(new ActionListener() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                updateEmployeeDialog();
+//            }
+//        });
 
 
-        addEmployee.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                addEmployeeDialog();
-            }
-        });
+//        addEmployee.addActionListener(new ActionListener() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                addEmployeeDialog();
+//            }
+//        });
 
         about.addActionListener(new ActionListener() {
             @Override
@@ -1221,220 +1221,220 @@ public class SystemInterface extends JFrame {
     }
 
 
-    private void updateEmployeeDialog() {
-        JDialog dialog = new JDialog(this, "Update employee information", true);
-        dialog.setSize(600, 500);
-        dialog.setLocationRelativeTo(frame);
-        dialog.setLayout(new BorderLayout());
+//    private void updateEmployeeDialog() {
+//        JDialog dialog = new JDialog(this, "Update employee information", true);
+//        dialog.setSize(600, 500);
+//        dialog.setLocationRelativeTo(frame);
+//        dialog.setLayout(new BorderLayout());
+//
+//        // ===== Top Panel: Search + Employee List =====
+//        JPanel topPanel = new JPanel(new BorderLayout());
+//        JPanel searchPanel = new JPanel(new GridLayout(1, 2));
+//        JLabel searchLabel = new JLabel("Search for an employee: ");
+//        JTextField searchTextField = new JTextField();
+//        searchPanel.add(searchLabel);
+//        searchPanel.add(searchTextField);
+//
+//        DefaultListModel<Employee> listModel = new DefaultListModel<>();
+//        JList<Employee> employeeList = new JList<>(listModel);
+//        JScrollPane scrollPane = new JScrollPane(employeeList);
+//
+//        topPanel.add(searchPanel, BorderLayout.NORTH);
+//        topPanel.add(scrollPane, BorderLayout.CENTER);
+//        dialog.add(topPanel, BorderLayout.NORTH);
+//
+//        // Load initial employee list
+//        for (Employee emp : employees) {
+//            listModel.addElement(emp);
+//        }
+//
+//        // Search filter functionality
+//        searchTextField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+//            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+//                filterList();
+//            }
+//
+//            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+//                filterList();
+//            }
+//
+//            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+//                filterList();
+//            }
+//
+//            private void filterList() {
+//                String searchKey = searchTextField.getText().toLowerCase();
+//                listModel.clear();
+//                for (Employee emp : employees) {
+//                    if (emp.getName().toLowerCase().contains(searchKey)) {
+//                        listModel.addElement(emp);
+//                    }
+//                }
+//            }
+//        });
+//
+//        // ===== Center Panel: Form to Edit =====
+//        JPanel labelPanel = new JPanel(new GridLayout(0, 1));
+//        JPanel fieldPanel = new JPanel(new GridLayout(0, 1));
+//
+//        String[] labels = {
+//                "Name:", "Role:", "Email:", "Phone:", "Location:"
+//        };
+//
+//        JTextField nameField = new JTextField();
+//        JTextField roleField = new JTextField();
+//        JTextField emailField = new JTextField();
+//        JTextField phoneField = new JTextField();
+//        JTextField locationField = new JTextField();
+//
+//        JTextField[] fields = {
+//                nameField, roleField, emailField, phoneField, locationField
+//        };
+//
+//        for (String l : labels) {
+//            labelPanel.add(new JLabel(l));
+//        }
+//        for (JTextField f : fields) {
+//            fieldPanel.add(f);
+//        }
+//
+//        JPanel centerPanel = new JPanel(new GridLayout(0, 2));
+//        centerPanel.add(labelPanel);
+//        centerPanel.add(fieldPanel);
+//        dialog.add(centerPanel, BorderLayout.CENTER);
+//
+//        // Populate fields on selection
+//        employeeList.addListSelectionListener(e -> {
+//            Employee selected = employeeList.getSelectedValue();
+//            if (selected != null) {
+//                nameField.setText(selected.getName());
+//                roleField.setText(selected.getRole());
+//                emailField.setText(selected.getEMail());
+//                phoneField.setText(Integer.toString(selected.getPhoneNumber()));
+//                locationField.setText(selected.getLocation());
+//            }
+//        });
+//
+//        // ===== Bottom Panel: Submit/Cancel Buttons =====
+//        JPanel buttonPanel = new JPanel(new GridLayout(1, 2));
+//        JButton submitButton = new JButton("Submit");
+//        JButton cancelButton = new JButton("Cancel");
+//
+//        submitButton.addActionListener(e -> {
+//            Employee selected = employeeList.getSelectedValue();
+//            if (selected == null) {
+//                JOptionPane.showMessageDialog(dialog, "Please select an employee.");
+//                return;
+//            }
+//
+//            try {
+//                String updatedName = nameField.getText().trim();
+//                String updatedRole = roleField.getText().trim();
+//                String updatedEmail = emailField.getText().trim();
+//                int updatedPhone = Integer.parseInt(phoneField.getText().trim());
+//                String updatedLocation = locationField.getText().trim();
+//
+//                boolean success = SQLDatabase.updateEmployeeByID(
+//                        selected.getEmployeeID(), updatedName, updatedRole, updatedEmail, updatedPhone, updatedLocation
+//                );
+//
+//                if (success) {
+//                    JOptionPane.showMessageDialog(dialog, "Employee information updated successfully.");
+//                    employees = SQLDatabase.getAllEmployees();
+//                    dialog.dispose();
+//                } else {
+//                    JOptionPane.showMessageDialog(dialog, "Update failed. Please try again.");
+//                }
+//            } catch (NumberFormatException ex) {
+//                JOptionPane.showMessageDialog(dialog, "Please enter a valid phone number.");
+//            }
+//        });
+//
+//        cancelButton.addActionListener(e -> dialog.dispose());
+//        buttonPanel.add(submitButton);
+//        buttonPanel.add(cancelButton);
+//        dialog.add(buttonPanel, BorderLayout.SOUTH);
+//
+//        dialog.setVisible(true);
+//    }
 
-        // ===== Top Panel: Search + Employee List =====
-        JPanel topPanel = new JPanel(new BorderLayout());
-        JPanel searchPanel = new JPanel(new GridLayout(1, 2));
-        JLabel searchLabel = new JLabel("Search for an employee: ");
-        JTextField searchTextField = new JTextField();
-        searchPanel.add(searchLabel);
-        searchPanel.add(searchTextField);
 
-        DefaultListModel<Employee> listModel = new DefaultListModel<>();
-        JList<Employee> employeeList = new JList<>(listModel);
-        JScrollPane scrollPane = new JScrollPane(employeeList);
-
-        topPanel.add(searchPanel, BorderLayout.NORTH);
-        topPanel.add(scrollPane, BorderLayout.CENTER);
-        dialog.add(topPanel, BorderLayout.NORTH);
-
-        // Load initial employee list
-        for (Employee emp : employees) {
-            listModel.addElement(emp);
-        }
-
-        // Search filter functionality
-        searchTextField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            public void insertUpdate(javax.swing.event.DocumentEvent e) {
-                filterList();
-            }
-
-            public void removeUpdate(javax.swing.event.DocumentEvent e) {
-                filterList();
-            }
-
-            public void changedUpdate(javax.swing.event.DocumentEvent e) {
-                filterList();
-            }
-
-            private void filterList() {
-                String searchKey = searchTextField.getText().toLowerCase();
-                listModel.clear();
-                for (Employee emp : employees) {
-                    if (emp.getName().toLowerCase().contains(searchKey)) {
-                        listModel.addElement(emp);
-                    }
-                }
-            }
-        });
-
-        // ===== Center Panel: Form to Edit =====
-        JPanel labelPanel = new JPanel(new GridLayout(0, 1));
-        JPanel fieldPanel = new JPanel(new GridLayout(0, 1));
-
-        String[] labels = {
-                "Name:", "Role:", "Email:", "Phone:", "Location:"
-        };
-
-        JTextField nameField = new JTextField();
-        JTextField roleField = new JTextField();
-        JTextField emailField = new JTextField();
-        JTextField phoneField = new JTextField();
-        JTextField locationField = new JTextField();
-
-        JTextField[] fields = {
-                nameField, roleField, emailField, phoneField, locationField
-        };
-
-        for (String l : labels) {
-            labelPanel.add(new JLabel(l));
-        }
-        for (JTextField f : fields) {
-            fieldPanel.add(f);
-        }
-
-        JPanel centerPanel = new JPanel(new GridLayout(0, 2));
-        centerPanel.add(labelPanel);
-        centerPanel.add(fieldPanel);
-        dialog.add(centerPanel, BorderLayout.CENTER);
-
-        // Populate fields on selection
-        employeeList.addListSelectionListener(e -> {
-            Employee selected = employeeList.getSelectedValue();
-            if (selected != null) {
-                nameField.setText(selected.getName());
-                roleField.setText(selected.getRole());
-                emailField.setText(selected.getEMail());
-                phoneField.setText(Integer.toString(selected.getPhoneNumber()));
-                locationField.setText(selected.getLocation());
-            }
-        });
-
-        // ===== Bottom Panel: Submit/Cancel Buttons =====
-        JPanel buttonPanel = new JPanel(new GridLayout(1, 2));
-        JButton submitButton = new JButton("Submit");
-        JButton cancelButton = new JButton("Cancel");
-
-        submitButton.addActionListener(e -> {
-            Employee selected = employeeList.getSelectedValue();
-            if (selected == null) {
-                JOptionPane.showMessageDialog(dialog, "Please select an employee.");
-                return;
-            }
-
-            try {
-                String updatedName = nameField.getText().trim();
-                String updatedRole = roleField.getText().trim();
-                String updatedEmail = emailField.getText().trim();
-                int updatedPhone = Integer.parseInt(phoneField.getText().trim());
-                String updatedLocation = locationField.getText().trim();
-
-                boolean success = SQLDatabase.updateEmployeeByID(
-                        selected.getEmployeeID(), updatedName, updatedRole, updatedEmail, updatedPhone, updatedLocation
-                );
-
-                if (success) {
-                    JOptionPane.showMessageDialog(dialog, "Employee information updated successfully.");
-                    employees = SQLDatabase.getAllEmployees();
-                    dialog.dispose();
-                } else {
-                    JOptionPane.showMessageDialog(dialog, "Update failed. Please try again.");
-                }
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(dialog, "Please enter a valid phone number.");
-            }
-        });
-
-        cancelButton.addActionListener(e -> dialog.dispose());
-        buttonPanel.add(submitButton);
-        buttonPanel.add(cancelButton);
-        dialog.add(buttonPanel, BorderLayout.SOUTH);
-
-        dialog.setVisible(true);
-    }
-
-
-    private void addEmployeeDialog() {
-        JDialog dialog = new JDialog(this, "Add an Employee", true);
-        dialog.setSize(600, 500);
-        dialog.setLocationRelativeTo(frame);
-        dialog.setLayout(new BorderLayout());
-        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-
-        // ========== Label + Input Panels ==========
-        JPanel labelPanel = new JPanel(new GridLayout(0, 1));
-        JPanel fieldPanel = new JPanel(new GridLayout(0, 1));
-
-        // Labels and text field definitions for employee attributes
-        String[] fieldLabels = {"Employee Name:", "Role:", "Email:", "Phone:", "Location:"};
-
-        JTextField nameField = new JTextField();
-        JTextField roleField = new JTextField();
-        JTextField emailField = new JTextField();
-        JTextField phoneField = new JTextField();
-        JTextField locationField = new JTextField();
-
-        // Group fields into array for easy iteration
-        JTextField[] fields = {nameField, roleField, emailField, phoneField, locationField};
-
-        for (String label : fieldLabels) {
-            labelPanel.add(new JLabel(label));
-        }
-        for (JTextField field : fields) {
-            fieldPanel.add(field);
-        }
-
-        JPanel centerPanel = new JPanel(new GridLayout(0, 2));
-        centerPanel.add(labelPanel);
-        centerPanel.add(fieldPanel);
-        dialog.add(centerPanel, BorderLayout.CENTER);
-
-        // ========== Button Panel ==========
-        JPanel buttonPanel = new JPanel(new GridLayout(1, 2));
-        JButton submitButton = new JButton("Submit");
-        JButton cancelButton = new JButton("Cancel");
-
-        cancelButton.addActionListener(e -> dialog.dispose());
-
-        // ===== Submit Button Logic =====
-        submitButton.addActionListener(e -> {
-            try {
-                String employeeName = nameField.getText().trim();
-                String role = roleField.getText().trim();
-                String email = emailField.getText().trim();
-                int phoneNumber = SQLDatabase.stringToInt(phoneField.getText().trim());
-                String location = locationField.getText().trim();
-
-                // Insert employee via SQLDatabase helper
-                boolean success = SQLDatabase.insertEmployee(employeeName, role, email, phoneNumber, location
-                );
-
-                if (success) {
-                    employees = SQLDatabase.getAllEmployees(); // Refresh mission list
-                    JOptionPane.showMessageDialog(dialog, "Employee successfully added!");
-                    dialog.dispose();
-                } else {
-                    JOptionPane.showMessageDialog(dialog, "Employee ID not found.", "Error", JOptionPane.ERROR_MESSAGE);
-                }
-
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(dialog, "Please input a valid phone number", "Input Error", JOptionPane.ERROR_MESSAGE);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                JOptionPane.showMessageDialog(dialog, "Database Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        });
-
-        buttonPanel.add(submitButton);
-        buttonPanel.add(cancelButton);
-        dialog.add(buttonPanel, BorderLayout.SOUTH);
-        dialog.setVisible(true);
-    }
+//    private void addEmployeeDialog() {
+//        JDialog dialog = new JDialog(this, "Add an Employee", true);
+//        dialog.setSize(600, 500);
+//        dialog.setLocationRelativeTo(frame);
+//        dialog.setLayout(new BorderLayout());
+//        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+//
+//        // ========== Label + Input Panels ==========
+//        JPanel labelPanel = new JPanel(new GridLayout(0, 1));
+//        JPanel fieldPanel = new JPanel(new GridLayout(0, 1));
+//
+//        // Labels and text field definitions for employee attributes
+//        String[] fieldLabels = {"Employee Name:", "Role:", "Email:", "Phone:", "Location:"};
+//
+//        JTextField nameField = new JTextField();
+//        JTextField roleField = new JTextField();
+//        JTextField emailField = new JTextField();
+//        JTextField phoneField = new JTextField();
+//        JTextField locationField = new JTextField();
+//
+//        // Group fields into array for easy iteration
+//        JTextField[] fields = {nameField, roleField, emailField, phoneField, locationField};
+//
+//        for (String label : fieldLabels) {
+//            labelPanel.add(new JLabel(label));
+//        }
+//        for (JTextField field : fields) {
+//            fieldPanel.add(field);
+//        }
+//
+//        JPanel centerPanel = new JPanel(new GridLayout(0, 2));
+//        centerPanel.add(labelPanel);
+//        centerPanel.add(fieldPanel);
+//        dialog.add(centerPanel, BorderLayout.CENTER);
+//
+//        // ========== Button Panel ==========
+//        JPanel buttonPanel = new JPanel(new GridLayout(1, 2));
+//        JButton submitButton = new JButton("Submit");
+//        JButton cancelButton = new JButton("Cancel");
+//
+//        cancelButton.addActionListener(e -> dialog.dispose());
+//
+//        // ===== Submit Button Logic =====
+//        submitButton.addActionListener(e -> {
+//            try {
+//                String employeeName = nameField.getText().trim();
+//                String role = roleField.getText().trim();
+//                String email = emailField.getText().trim();
+//                int phoneNumber = SQLDatabase.stringToInt(phoneField.getText().trim());
+//                String location = locationField.getText().trim();
+//
+//                // Insert employee via SQLDatabase helper
+//                boolean success = SQLDatabase.insertEmployee(employeeName, role, email, phoneNumber, location
+//                );
+//
+//                if (success) {
+//                    employees = SQLDatabase.getAllEmployees(); // Refresh mission list
+//                    JOptionPane.showMessageDialog(dialog, "Employee successfully added!");
+//                    dialog.dispose();
+//                } else {
+//                    JOptionPane.showMessageDialog(dialog, "Employee ID not found.", "Error", JOptionPane.ERROR_MESSAGE);
+//                }
+//
+//            } catch (NumberFormatException ex) {
+//                JOptionPane.showMessageDialog(dialog, "Please input a valid phone number", "Input Error", JOptionPane.ERROR_MESSAGE);
+//            } catch (Exception ex) {
+//                ex.printStackTrace();
+//                JOptionPane.showMessageDialog(dialog, "Database Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+//            }
+//        });
+//
+//        buttonPanel.add(submitButton);
+//        buttonPanel.add(cancelButton);
+//        dialog.add(buttonPanel, BorderLayout.SOUTH);
+//        dialog.setVisible(true);
+//    }
 
     public static void main(String[] args) {
 
