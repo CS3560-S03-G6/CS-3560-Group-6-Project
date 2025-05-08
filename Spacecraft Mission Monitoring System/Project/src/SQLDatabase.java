@@ -175,6 +175,23 @@ public class SQLDatabase {
         }
     }
 
+
+    public static boolean updateEmployeeByID(int employeeID, String name, String role, String email, int phone, String location) {
+        String sql = "UPDATE employee SET name=?, role=?, workEmail=?, phoneNumber=?, location=? WHERE employeeID=?";
+        try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, name);
+            stmt.setString(2, role);
+            stmt.setString(3, email);
+            stmt.setInt(4, phone);
+            stmt.setString(5, location);
+            stmt.setInt(6, employeeID);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public static boolean updateTerminationDate(int missionID, String terminationDate) {
         String sql = "UPDATE mission SET terminationDate = ?, missionStatus = 'Terminated' WHERE missionID = ?";
         try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
