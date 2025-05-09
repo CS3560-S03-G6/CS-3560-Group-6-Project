@@ -262,7 +262,6 @@ public class SystemInterface extends JFrame {
         JTextField objectivesField = new JTextField();
         JTextField fuelLevelField = new JTextField();
         JTextField locationField = new JTextField();
-        JTextField terminationDateField = new JTextField();
 
         List<Spacecraft> availableSpacecraft = SQLDatabase.getAvailableSpacecraft();
         JComboBox<Spacecraft> spacecraftComboBox = new JComboBox<>(availableSpacecraft.toArray(new Spacecraft[0]));
@@ -283,8 +282,6 @@ public class SystemInterface extends JFrame {
         formPanel.add(fuelLevelField);
         formPanel.add(new JLabel("Initial Location:"));
         formPanel.add(locationField);
-        formPanel.add(new JLabel("Termination Date:"));
-        formPanel.add(terminationDateField);
 
         // Button panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
@@ -306,12 +303,11 @@ public class SystemInterface extends JFrame {
                 String obj = objectivesField.getText().trim();
                 int fuel = Integer.parseInt(fuelLevelField.getText().trim());
                 String loc = locationField.getText().trim();
-                String termination = terminationDateField.getText().trim();
                 Spacecraft selected = (Spacecraft) spacecraftComboBox.getSelectedItem();
                 Integer spacecraftID = selected != null ? selected.getSpacecraftID() : null;
 
                 int missionID = SQLDatabase.insertMissionReturnID(
-                        employeeID, name, type, launch, status, obj, fuel, loc, termination, spacecraftID
+                        employeeID, name, type, launch, status, obj, fuel, loc, spacecraftID
                 );
 
                 if (spacecraftID != null && missionID != -1) {
@@ -357,7 +353,9 @@ public class SystemInterface extends JFrame {
         topPanel.add(searchPanel, BorderLayout.NORTH);
         topPanel.add(scrollPane, BorderLayout.CENTER);
         dialog.add(topPanel, BorderLayout.NORTH);
-
+        
+        missions = SQLDatabase.getAllMissions();
+        
         for (Mission m : missions) {
             listModel.addElement(m);
         }
@@ -530,8 +528,6 @@ public class SystemInterface extends JFrame {
         dialog.setLayout(new BorderLayout());
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-        missions = SQLDatabase.getAllMissions();
-
         JPanel upperPanel = new JPanel(new GridLayout(1, 0));
         JLabel searchLabel = new JLabel("Search Mission(s): ");
         JTextField searchTextField = new JTextField();
@@ -553,6 +549,8 @@ public class SystemInterface extends JFrame {
         searchButton.addActionListener(e -> {
             String searchKey = searchTextField.getText().toLowerCase();
             listContents.clear();
+
+            missions = SQLDatabase.getAllMissions();
             boolean found = false;
             for (Mission m : missions) {
                 if (m.getMissionName().toLowerCase().contains(searchKey)) {
@@ -700,6 +698,9 @@ public class SystemInterface extends JFrame {
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         JScrollPane scrollPane = new JScrollPane(list);
         middlePanel.add(scrollPane);
+
+        // Start getting all the missions first:
+        missions = SQLDatabase.getAllMissions();
 
         // Load only missions that are not terminated (terminationDate is null or empty)
         listContents.clear();

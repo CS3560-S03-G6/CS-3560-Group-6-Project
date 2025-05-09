@@ -207,7 +207,7 @@ public class SQLDatabase {
 // Insert mission and return generated missionID
     public static int insertMissionReturnID(int employeeID, String missionName, String missionType, String launchDate,
             String status, String objectives, int fuelLevel, String location,
-            String terminationDate, Integer spacecraftID) {
+             Integer spacecraftID) {
         String sql = "INSERT INTO mission (employeeID, missionName, missionType, launchDate, missionStatus, missionObjective, initialFuelLevel, initialLocation, terminationDate, spacecraftID) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, employeeID);
@@ -218,7 +218,7 @@ public class SQLDatabase {
             stmt.setString(6, objectives);
             stmt.setInt(7, fuelLevel);
             stmt.setString(8, location);
-            stmt.setString(9, terminationDate.isEmpty() ? null : terminationDate);
+            stmt.setString(9, null);
             if (spacecraftID != null) {
                 stmt.setInt(10, spacecraftID);
             } else {
