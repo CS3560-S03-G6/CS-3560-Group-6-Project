@@ -20,11 +20,6 @@ public class SystemInterface extends JFrame {
     JFrame frame;
 
     SystemInterface() {
-        JFrame frame = new JFrame(title);
-        frame.setLocationRelativeTo(null);
-        frame.setSize(300, 300);
-
-        frame.setVisible(true);
     }
 
     public static void showLoginFrame() {
