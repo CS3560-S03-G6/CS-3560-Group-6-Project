@@ -1,21 +1,23 @@
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 
 public class MissionReport {
+
     private int missionReportID;
-    private int missionID;
+    Mission mission;
     private String dateGenerated;
     private Maneuver[] executedManeuvers;
     private int currentFuelUsage;
     private int currentFuelLevel;
     private Issue[] detectedIssues;
-    
+
     // Constructor that takes in all necessary fields
-    public MissionReport(int missionReportID, int missionID, String dateGenerated, Maneuver[] executedManeuvers,
+    public MissionReport(int missionReportID, Mission mission, String dateGenerated, Maneuver[] executedManeuvers,
             int currentFuelUsage, int currentFuelLevel, Issue[] detectedIssues) {
         this.missionReportID = missionReportID;
-        this.missionID = missionID;
+        this.mission = mission;
         this.dateGenerated = dateGenerated;
         this.executedManeuvers = executedManeuvers;
         this.currentFuelUsage = currentFuelUsage;
@@ -32,15 +34,14 @@ public class MissionReport {
     public void setMissionReportID(int missionReportID) {
         this.missionReportID = missionReportID;
     }
-
-    // Getter for missionID
-    public int getMissionID() {
-        return missionID;
+    // Getter for mission
+    public Mission getMission() {
+        return mission;
     }
-
-    // Setter for missionID
-    public void setMissionID(int missionID) {
-        this.missionID = missionID;
+    
+    // Setter for mission
+    public void setMission(Mission mission) {
+        this.mission = mission;
     }
 
     // Getter for dateGenerated
@@ -98,34 +99,41 @@ public class MissionReport {
     }
 
     //Outputs this mission report to a .txt file
-    public void exportReport(){
-        
-        String fileName = "report_mission_" + missionID + ".txt";
+    public void exportReport() {
+
+        String fileName = "report_mission_" + mission.getMissionID() + ".txt";
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
-            writer.write("MISSION REPORT FOR MISSION ID " + missionID+"\n");
-            writer.write("Report ID: " + missionReportID +"\n");
-            writer.write("Date Generated: " + dateGenerated +"\n");
+            writer.write("MISSION REPORT FOR MISSION ID " + mission.getMissionID() + "\n");
+            writer.write("Report ID: " + missionReportID + "\n");
+            writer.write("Date Generated: " + dateGenerated + "\n");
+            if (mission.getSpacecraft() != null) {
+                Spacecraft sc = mission.getSpacecraft();
+                writer.write("Spacecraft: #" + sc.getSpacecraftID() + " - " + sc.getSpacecraftName()
+                        + " (" + sc.getSpacecraftType() + ")\n");
+            } else {
+                writer.write("Spacecraft: None Assigned\n");
+            }
             writer.write("=====================================\n");
             if (executedManeuvers != null) {
                 writer.write("Executed Maneuvers:");
                 writer.newLine();
                 for (Maneuver m : executedManeuvers) {
                     writer.write("-----------------------------\n");
-                    writer.write("Maneuver ID: " + m.getManeuverID()+"\n");
-                    writer.write("Maneuver Type: " + m.getManeuverType()+"\n");
-                    writer.write("Maneuver Description: " + m.getManeuverDescription()+"\n");
-                    writer.write("Execution Time: " + m.getExecutionTime()+"\n");
-                    writer.write("Fuel Cost: " + m.getFuelCost()+"\n");
-                    writer.write("Status: " + m.getStatus()+"\n");
-                    writer.write("Logged Time: " + m.getLoggedTime()+"\n");
-                    writer.write("Logged By: " + m.getLoggedBy()+"\n");
+                    writer.write("Maneuver ID: " + m.getManeuverID() + "\n");
+                    writer.write("Maneuver Type: " + m.getManeuverType() + "\n");
+                    writer.write("Maneuver Description: " + m.getManeuverDescription() + "\n");
+                    writer.write("Execution Time: " + m.getExecutionTime() + "\n");
+                    writer.write("Fuel Cost: " + m.getFuelCost() + "\n");
+                    writer.write("Status: " + m.getStatus() + "\n");
+                    writer.write("Logged Time: " + m.getLoggedTime() + "\n");
+                    writer.write("Logged By: " + m.getLoggedBy() + "\n");
                 }
-            }
-            else{
+            } else {
                 writer.write("No manuevers have been executed so far.\n");
                 writer.newLine();
             }
             writer.write("=====================================\n");
+            writer.write("Initial fuel level: " + mission.getInitialFuelLevel() + "\n") ;
             writer.write("Current fuel usage: " + currentFuelUsage);
             writer.newLine();
             writer.write("Current fuel level: " + currentFuelLevel + "\n");
@@ -133,15 +141,14 @@ public class MissionReport {
             if (detectedIssues != null) {
                 writer.write("Issues:\n");
                 for (Issue issue : detectedIssues) {
-                    writer.write("Issue ID: " + issue.getIssueID()+"\n");
-                    writer.write("Issue Type: " + issue.getIssueType()+"\n");
-                    writer.write("Detection Time: " + issue.getDetectionTime()+"\n");
-                    writer.write("Severity Level: " + issue.getSeverityLevel()+"\n");
-                    writer.write("Alert Triggered: " + issue.getAlertTriggered()+"\n");
-                    writer.write("Resolution Status: " + issue.getResolutionStatus()+"\n");
+                    writer.write("Issue ID: " + issue.getIssueID() + "\n");
+                    writer.write("Issue Type: " + issue.getIssueType() + "\n");
+                    writer.write("Detection Time: " + issue.getDetectionTime() + "\n");
+                    writer.write("Severity Level: " + issue.getSeverityLevel() + "\n");
+                    writer.write("Alert Triggered: " + issue.getAlertTriggered() + "\n");
+                    writer.write("Resolution Status: " + issue.getResolutionStatus() + "\n");
                 }
-            }
-            else{
+            } else {
                 writer.write("This mission has had no issues so far.\n");
             }
         } catch (IOException e) {

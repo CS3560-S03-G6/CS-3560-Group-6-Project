@@ -2,16 +2,18 @@
 public class Employee {
     private int employeeID;
     private String name;
-    private String role;
+    private String userName;
+    private String password;
     private String eMail;
     private int phoneNumber;
     private String location;
 
     //Constructor that takes in all necessary fields
-    public Employee(int employeeID, String name, String role, String eMail, int phoneNumber, String location){
+    public Employee(int employeeID, String name, String userName, String password, String eMail, int phoneNumber, String location){
         this.employeeID = employeeID;
         this.name = name;
-        this.role = role;
+        this.userName = userName;
+        this.password = password;
         this.eMail = eMail;
         this.phoneNumber = phoneNumber;
         this.location = location;
@@ -37,14 +39,24 @@ public class Employee {
         this.name = name;
     }
     
-    //Getter for role
-    public String getRole() {
-        return role;
+    //Getter for userName
+    public String getUserName() {
+        return userName;
     }
 
     //Setter for role
-    public void setRole(String role) {
-        this.role = role;
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+    
+        //Getter for password
+    public String getPassword() {
+        return password;
+    }
+
+    //Setter for role
+    public void setPassword(String password) {
+        this.password = password;
     }
     
     //Getter for eMail

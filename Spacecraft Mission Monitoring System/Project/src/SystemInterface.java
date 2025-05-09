@@ -1,3 +1,4 @@
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -6,13 +7,14 @@ import java.awt.Image;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
+
 import java.util.*;
 
 public class SystemInterface extends JFrame {
 
     private List<Mission> missions;
     private List<Employee> employees;
+    private static int employeeID = -1; // need to make it static to be used in static methods and references
 
     String title = "Untitled";
     JFrame frame;
@@ -25,20 +27,52 @@ public class SystemInterface extends JFrame {
         frame.setVisible(true);
     }
 
+    public static void showLoginFrame() {
+        JFrame loginFrame = new JFrame("Login");
+        loginFrame.setSize(300, 300);
+        loginFrame.setLayout(new GridLayout(5, 1));
+        loginFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        loginFrame.setLocationRelativeTo(null);
+
+        JTextField usernameField = new JTextField();
+        JPasswordField passwordField = new JPasswordField();
+        JButton loginButton = new JButton("Login");
+
+        loginFrame.add(new JLabel("Username:"));
+        loginFrame.add(usernameField);
+        loginFrame.add(new JLabel("Password:"));
+        loginFrame.add(passwordField);
+        loginFrame.add(loginButton);
+
+        loginButton.addActionListener(e -> {
+            String username = usernameField.getText().trim();
+            String password = new String(passwordField.getPassword()).trim();
+            employeeID = SQLDatabase.authenticateUser(username, password);
+
+            if (employeeID != -1) {
+                loginFrame.dispose();
+                new SystemInterface("Spacecraft Mission Control System");
+            } else {
+                JOptionPane.showMessageDialog(loginFrame, "Invalid login credentials", "Login Failed", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        loginFrame.setVisible(true);
+    }
+
     SystemInterface(String newTitle) {
 
         try {
             missions = SQLDatabase.getAllMissions(); // ✅ Load mission data here
         } catch (Exception e) {
-            System.out.println("❌ Failed to load missions: " + e.getMessage());
+            System.out.println("Error: Failed to load missions: " + e.getMessage());
             missions = new ArrayList<>(); // fallback to avoid null errors
         }
-
 
         try {
             this.employees = SQLDatabase.getAllEmployees(); // ✅ Load employee data here
         } catch (Exception e) {
-            System.out.println("❌ Failed to load missions: " + e.getMessage());
+            System.out.println("Error: Failed to load missions: " + e.getMessage());
             employees = new ArrayList<>(); // fallback to avoid null errors
         }
 
@@ -77,11 +111,6 @@ public class SystemInterface extends JFrame {
         JMenu employeeMenu = new JMenu("Employee");
         JMenu systemMenu = new JMenu("System");
 
-        missionMenu.setMnemonic('M');
-        maneuverMenu.setMnemonic('a');
-        employeeMenu.setMnemonic('E');
-        systemMenu.setMnemonic('S');
-
         menuBar.add(missionMenu);
         menuBar.add(maneuverMenu);
         menuBar.add(employeeMenu);
@@ -100,22 +129,7 @@ public class SystemInterface extends JFrame {
         JMenuItem addEmployee = new JMenuItem("Add employee");
         JMenuItem removeEmployee = new JMenuItem("Remove employee");
         JMenuItem about = new JMenuItem("About");
-        JMenuItem exit = new JMenuItem("Exit");
-
-        addMission.setMnemonic('a');
-        updateMission.setMnemonic('u');
-        searchMission.setMnemonic('s');
-        terminateMission.setMnemonic('t');
-        scheduleImmediateManeuver.setMnemonic('i');
-        scheduleFutureManeuver.setMnemonic('f');
-        updateManeuver.setMnemonic('u');
-        logPastManeuver.setMnemonic('l');
-        viewEmployees.setMnemonic('v');
-//        updateEmployee.setMnemonic('u');
-//        addEmployee.setMnemonic('a');
-//        removeEmployee.setMnemonic('r');
-        about.setMnemonic('a');
-        exit.setMnemonic('e');
+        JMenuItem logout = new JMenuItem("Log Out");
 
         missionMenu.add(addMission);
         missionMenu.add(updateMission);
@@ -126,12 +140,8 @@ public class SystemInterface extends JFrame {
         maneuverMenu.add(updateManeuver);
         maneuverMenu.add(logPastManeuver);
         employeeMenu.add(viewEmployees);
-//        employeeMenu.add(updateEmployee);
-//        employeeMenu.add(addEmployee);
-//        employeeMenu.add(removeEmployee);
         systemMenu.add(about);
-        systemMenu.add(exit);
-
+        systemMenu.add(logout);
 
         addMission.addActionListener(new ActionListener() {
             @Override
@@ -188,29 +198,12 @@ public class SystemInterface extends JFrame {
             }
         });
 
-
         viewEmployees.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 viewEmployeesDialog();
             }
         });
-
-//        updateEmployee.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                updateEmployeeDialog();
-//            }
-//        });
-
-
-//        addEmployee.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                addEmployeeDialog();
-//            }
-//        });
-
         about.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -218,12 +211,27 @@ public class SystemInterface extends JFrame {
             }
         });
 
-        exit.addActionListener(new ActionListener() {
+        logout.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+                frame.dispose();         // Close the main application window
+                showLoginFrame();       // Reopen login window
             }
         });
+
+        // This is where the roles accessibility begins:
+        boolean isController = SQLDatabase.isMissionController(employeeID);
+        boolean isDirector = SQLDatabase.isFlightDirector(employeeID);
+        boolean isCommander = SQLDatabase.isCrewCommander(employeeID);
+        boolean isCrew = SQLDatabase.isCrewMember(employeeID);
+
+        if (isDirector || isCommander || isCrew) {
+            addMission.setEnabled(false);
+            updateMission.setEnabled(false);
+            searchMission.setEnabled(false);
+            terminateMission.setEnabled(false);
+            updateManeuver.setEnabled(false);
+        }
 
         frame.setJMenuBar(menuBar);
 
@@ -239,23 +247,14 @@ public class SystemInterface extends JFrame {
      * - Refreshes mission list upon success.
      */
     private void addMissionDialog() {
-        JDialog dialog = new JDialog(this, "Add a Mission", true);
+        JDialog dialog = new JDialog((JFrame) null, "Add Mission", true);
         dialog.setSize(600, 500);
         dialog.setLocationRelativeTo(frame);
         dialog.setLayout(new BorderLayout());
-        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-        // ========== Label + Input Panels ==========
-        JPanel labelPanel = new JPanel(new GridLayout(0, 1));
-        JPanel fieldPanel = new JPanel(new GridLayout(0, 1));
+        // Form panel
+        JPanel formPanel = new JPanel(new GridLayout(11, 2, 5, 5));
 
-        // Labels and text field definitions for mission attributes
-        String[] fieldLabels = {
-                "Employee ID:", "Mission Name:", "Mission Type:", "Launch Date (YYYY-MM-DD):",
-                "Status:", "Objectives:", "Initial Fuel Level:", "Initial Location:", "Termination Date (YYYY-MM-DD):"
-        };
-
-        JTextField empIDField = new JTextField();
         JTextField missionNameField = new JTextField();
         JTextField missionTypeField = new JTextField();
         JTextField launchDateField = new JTextField();
@@ -265,80 +264,70 @@ public class SystemInterface extends JFrame {
         JTextField locationField = new JTextField();
         JTextField terminationDateField = new JTextField();
 
-        // Group fields into array for easy iteration
-        JTextField[] fields = {
-                empIDField, missionNameField, missionTypeField, launchDateField,
-                statusField, objectivesField, fuelLevelField, locationField, terminationDateField
-        };
+        List<Spacecraft> availableSpacecraft = SQLDatabase.getAvailableSpacecraft();
+        JComboBox<Spacecraft> spacecraftComboBox = new JComboBox<>(availableSpacecraft.toArray(new Spacecraft[0]));
 
-        for (String label : fieldLabels) {
-            labelPanel.add(new JLabel(label));
-        }
-        for (JTextField field : fields) {
-            fieldPanel.add(field);
-        }
+        formPanel.add(new JLabel("Mission Name:"));
+        formPanel.add(missionNameField);
+        formPanel.add(new JLabel("Mission Type:"));
+        formPanel.add(missionTypeField);
+        formPanel.add(new JLabel("Launch Date:"));
+        formPanel.add(launchDateField);
+        formPanel.add(new JLabel("Status:"));
+        formPanel.add(statusField);
+        formPanel.add(new JLabel("Objectives:"));
+        formPanel.add(objectivesField);
+        formPanel.add(new JLabel("Spacecraft:"));
+        formPanel.add(spacecraftComboBox);
+        formPanel.add(new JLabel("Fuel Level:"));
+        formPanel.add(fuelLevelField);
+        formPanel.add(new JLabel("Initial Location:"));
+        formPanel.add(locationField);
+        formPanel.add(new JLabel("Termination Date:"));
+        formPanel.add(terminationDateField);
 
-        JPanel centerPanel = new JPanel(new GridLayout(0, 2));
-        centerPanel.add(labelPanel);
-        centerPanel.add(fieldPanel);
-        dialog.add(centerPanel, BorderLayout.CENTER);
+        // Button panel
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JButton submit = new JButton("Add Mission");
+        JButton cancel = new JButton("Cancel");
+        buttonPanel.add(submit);
+        buttonPanel.add(cancel);
 
-        // ========== Button Panel ==========
-        JPanel buttonPanel = new JPanel(new GridLayout(1, 2));
-        JButton submitButton = new JButton("Submit");
-        JButton cancelButton = new JButton("Cancel");
+        // Add panels to dialog
+        dialog.add(formPanel, BorderLayout.CENTER);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
 
-        cancelButton.addActionListener(e -> dialog.dispose());
-
-        // ===== Submit Button Logic =====
-        submitButton.addActionListener(e -> {
+        submit.addActionListener((ActionEvent e) -> {
             try {
-                int employeeID = Integer.parseInt(empIDField.getText().trim());
-                String missionName = missionNameField.getText().trim();
-
-                // Check for duplicate mission name
-                boolean exists = missions.stream()
-                        .anyMatch(m -> m.getMissionName().equalsIgnoreCase(missionName));
-
-                if (exists) {
-                    JOptionPane.showMessageDialog(dialog, "A mission with that name already exists.", "Duplicate Mission", JOptionPane.WARNING_MESSAGE);
-                    return;
-                }
-
-                // Extract other inputs
-                String missionType = missionTypeField.getText().trim();
-                String launchDate = launchDateField.getText().trim();
+                String name = missionNameField.getText().trim();
+                String type = missionTypeField.getText().trim();
+                String launch = launchDateField.getText().trim();
                 String status = statusField.getText().trim();
-                String objectives = objectivesField.getText().trim();
-                int fuelLevel = Integer.parseInt(fuelLevelField.getText().trim());
-                String location = locationField.getText().trim();
-                String terminationDate = terminationDateField.getText().trim();
+                String obj = objectivesField.getText().trim();
+                int fuel = Integer.parseInt(fuelLevelField.getText().trim());
+                String loc = locationField.getText().trim();
+                String termination = terminationDateField.getText().trim();
+                Spacecraft selected = (Spacecraft) spacecraftComboBox.getSelectedItem();
+                Integer spacecraftID = selected != null ? selected.getSpacecraftID() : null;
 
-                // Insert mission via SQLDatabase helper
-                boolean success = SQLDatabase.insertMission(
-                        employeeID, missionName, missionType, launchDate, status,
-                        objectives, fuelLevel, location, terminationDate
+                int missionID = SQLDatabase.insertMissionReturnID(
+                        employeeID, name, type, launch, status, obj, fuel, loc, termination, spacecraftID
                 );
 
-                if (success) {
-                    missions = SQLDatabase.getAllMissions(); // Refresh mission list
-                    JOptionPane.showMessageDialog(dialog, "Mission successfully added!");
-                    dialog.dispose();
-                } else {
-                    JOptionPane.showMessageDialog(dialog, "Employee ID not found.", "Error", JOptionPane.ERROR_MESSAGE);
+                if (spacecraftID != null && missionID != -1) {
+                    SQLDatabase.assignSpacecraftToMission(spacecraftID, missionID);
                 }
 
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(dialog, "Employee ID and Fuel Level must be numeric.", "Input Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, "Mission added successfully!");
+                dialog.dispose();
             } catch (Exception ex) {
                 ex.printStackTrace();
-                JOptionPane.showMessageDialog(dialog, "Database Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, "Failed to add mission.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
-        buttonPanel.add(submitButton);
-        buttonPanel.add(cancelButton);
-        dialog.add(buttonPanel, BorderLayout.SOUTH);
+        cancel.addActionListener(e -> dialog.dispose());
+
         dialog.setVisible(true);
     }
 
@@ -369,12 +358,10 @@ public class SystemInterface extends JFrame {
         topPanel.add(scrollPane, BorderLayout.CENTER);
         dialog.add(topPanel, BorderLayout.NORTH);
 
-        // Load initial mission list
         for (Mission m : missions) {
             listModel.addElement(m);
         }
 
-        // Search filter functionality
         searchTextField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             public void insertUpdate(javax.swing.event.DocumentEvent e) {
                 filterList();
@@ -399,14 +386,9 @@ public class SystemInterface extends JFrame {
             }
         });
 
-        // ===== Center Panel: Form to Edit =====
+        // ===== Center Panel: Form =====
         JPanel labelPanel = new JPanel(new GridLayout(0, 1));
         JPanel fieldPanel = new JPanel(new GridLayout(0, 1));
-
-        String[] labels = {
-                "Mission Name:", "Mission Type:", "Launch Date:", "Status:",
-                "Objectives:", "Fuel Level:", "Location:", "Termination Date:"
-        };
 
         JTextField nameField = new JTextField();
         JTextField typeField = new JTextField();
@@ -415,29 +397,53 @@ public class SystemInterface extends JFrame {
         JTextField objectivesField = new JTextField();
         JTextField fuelField = new JTextField();
         JTextField locationField = new JTextField();
-        JTextField terminationField = new JTextField();
+        JComboBox<Spacecraft> spacecraftComboBox = new JComboBox<>();
 
-        JTextField[] fields = {
-                nameField, typeField, launchField, statusField,
-                objectivesField, fuelField, locationField, terminationField
-        };
-
-        for (String l : labels) {
-            labelPanel.add(new JLabel(l));
-        }
-        for (JTextField f : fields) {
-            fieldPanel.add(f);
-        }
+        labelPanel.add(new JLabel("Mission Name:"));
+        fieldPanel.add(nameField);
+        labelPanel.add(new JLabel("Mission Type:"));
+        fieldPanel.add(typeField);
+        labelPanel.add(new JLabel("Launch Date:"));
+        fieldPanel.add(launchField);
+        labelPanel.add(new JLabel("Status:"));
+        fieldPanel.add(statusField);
+        labelPanel.add(new JLabel("Objectives:"));
+        fieldPanel.add(objectivesField);
+        labelPanel.add(new JLabel("Spacecraft:"));
+        fieldPanel.add(spacecraftComboBox);
+        labelPanel.add(new JLabel("Fuel Level:"));
+        fieldPanel.add(fuelField);
+        labelPanel.add(new JLabel("Location:"));
+        fieldPanel.add(locationField);
 
         JPanel centerPanel = new JPanel(new GridLayout(0, 2));
         centerPanel.add(labelPanel);
         centerPanel.add(fieldPanel);
         dialog.add(centerPanel, BorderLayout.CENTER);
 
-        // Populate fields on selection
+        // ===== Populate fields on selection =====
         missionList.addListSelectionListener(e -> {
             Mission selected = missionList.getSelectedValue();
             if (selected != null) {
+                // Load spacecraft list
+                spacecraftComboBox.removeAllItems();
+                List<Spacecraft> updatedList = SQLDatabase.getAvailableSpacecraft();
+                spacecraftComboBox.removeAllItems();
+                for (Spacecraft s : updatedList) {
+                    spacecraftComboBox.addItem(s);
+                }
+
+                // Only add the assigned spacecraft if it's not already in the list
+                Spacecraft current = selected.getSpacecraft();
+                if (current != null && updatedList.stream().noneMatch(s -> s.getSpacecraftID() == current.getSpacecraftID())) {
+                    spacecraftComboBox.addItem(current);
+                }
+                spacecraftComboBox.setSelectedItem(current);
+                for (Spacecraft s : updatedList) {
+                    spacecraftComboBox.addItem(s);
+                }
+
+                // Fill fields
                 nameField.setText(selected.getMissionName());
                 typeField.setText(selected.getMissionType());
                 launchField.setText(selected.getLaunchDate());
@@ -445,11 +451,19 @@ public class SystemInterface extends JFrame {
                 objectivesField.setText(selected.getMissionObjectives());
                 fuelField.setText(String.valueOf(selected.getInitialFuelLevel()));
                 locationField.setText(selected.getInitialLocation());
-                terminationField.setText(selected.getTerminationDate());
+
+                // Select assigned spacecraft
+                spacecraftComboBox.setSelectedItem(null);
+                for (int i = 0; i < spacecraftComboBox.getItemCount(); i++) {
+                    if (selected.getSpacecraft() != null
+                            && spacecraftComboBox.getItemAt(i).getSpacecraftID() == selected.getSpacecraft().getSpacecraftID()) {
+                        spacecraftComboBox.setSelectedIndex(i);
+                    }
+                }
             }
         });
 
-        // ===== Bottom Panel: Submit/Cancel Buttons =====
+        // ===== Bottom Panel: Buttons =====
         JPanel buttonPanel = new JPanel(new GridLayout(1, 2));
         JButton submitButton = new JButton("Submit");
         JButton cancelButton = new JButton("Cancel");
@@ -469,13 +483,24 @@ public class SystemInterface extends JFrame {
                 String updatedObjectives = objectivesField.getText().trim();
                 int updatedFuel = Integer.parseInt(fuelField.getText().trim());
                 String updatedLocation = locationField.getText().trim();
-                String updatedTermination = terminationField.getText().trim();
+                Spacecraft newSpacecraft = (Spacecraft) spacecraftComboBox.getSelectedItem();
+                Integer newSpacecraftID = newSpacecraft != null ? newSpacecraft.getSpacecraftID() : null;
 
+                // Unassign old spacecraft
+                SQLDatabase.unassignSpacecraftFromMission(selected.getMissionID());
+
+                // Update mission
                 boolean success = SQLDatabase.updateMissionByID(
                         selected.getMissionID(),
                         updatedName, updatedType, updatedLaunch, updatedStatus,
-                        updatedObjectives, updatedFuel, updatedLocation, updatedTermination
+                        updatedObjectives, updatedFuel, updatedLocation,
+                        newSpacecraftID, employeeID
                 );
+
+                // Assign new spacecraft
+                if (success && newSpacecraftID != null) {
+                    SQLDatabase.assignSpacecraftToMission(newSpacecraftID, selected.getMissionID());
+                }
 
                 if (success) {
                     JOptionPane.showMessageDialog(dialog, "Mission updated successfully.");
@@ -484,6 +509,7 @@ public class SystemInterface extends JFrame {
                 } else {
                     JOptionPane.showMessageDialog(dialog, "Update failed. Please try again.");
                 }
+
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(dialog, "Fuel level must be a valid number.");
             }
@@ -504,6 +530,8 @@ public class SystemInterface extends JFrame {
         dialog.setLayout(new BorderLayout());
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
+        missions = SQLDatabase.getAllMissions();
+
         JPanel upperPanel = new JPanel(new GridLayout(1, 0));
         JLabel searchLabel = new JLabel("Search Mission(s): ");
         JTextField searchTextField = new JTextField();
@@ -522,10 +550,6 @@ public class SystemInterface extends JFrame {
         JScrollPane scrollPane = new JScrollPane(list);
         middlePanel.add(scrollPane);
 
-        for (Mission m : missions) {
-            listContents.addElement(m);
-        }
-
         searchButton.addActionListener(e -> {
             String searchKey = searchTextField.getText().toLowerCase();
             listContents.clear();
@@ -537,8 +561,7 @@ public class SystemInterface extends JFrame {
                 }
             }
             if (!found) {
-                JOptionPane.showMessageDialog(null, "Search returned no results!");
-                viewAll.doClick();
+                JOptionPane.showMessageDialog(dialog, "Search returned no results!");
             }
         });
 
@@ -560,7 +583,6 @@ public class SystemInterface extends JFrame {
                 return;
             }
 
-            // Build mission details text
             StringBuilder details = new StringBuilder();
             details.append("Mission Details:\n");
             details.append("MissionID: ").append(selected.getMissionID()).append("\n");
@@ -569,6 +591,18 @@ public class SystemInterface extends JFrame {
             details.append("Status: ").append(selected.getMissionStatus()).append("\n");
             details.append("Launch Date: ").append(selected.getLaunchDate()).append("\n");
             details.append("Objectives: ").append(selected.getMissionObjectives()).append("\n");
+
+            if (selected.getSpacecraft() != null) {
+                Spacecraft sc = selected.getSpacecraft();
+                details.append("Spacecraft: #")
+                        .append(sc.getSpacecraftID())
+                        .append(" - ")
+                        .append(sc.getSpacecraftName())
+                        .append(" (").append(sc.getSpacecraftType()).append(")\n");
+            } else {
+                details.append("Spacecraft: None Assigned\n");
+            }
+
             details.append("Initial Fuel: ").append(selected.getInitialFuelLevel()).append(" units\n");
             details.append("Initial Location: ").append(selected.getInitialLocation()).append("\n");
             details.append("Termination Date: ").append(selected.getTerminationDate()).append("\n");
@@ -576,15 +610,26 @@ public class SystemInterface extends JFrame {
             JTextArea textArea = new JTextArea(details.toString());
             textArea.setEditable(false);
             textArea.setBackground(new JLabel().getBackground());
-
             JScrollPane scrollPaneInner = new JScrollPane(textArea);
             scrollPaneInner.setPreferredSize(new Dimension(450, 200));
 
             JButton exportButton = new JButton("Export Report");
+
+            JPanel detailsPanel = new JPanel(new BorderLayout());
+            detailsPanel.add(scrollPaneInner, BorderLayout.CENTER);
+            detailsPanel.add(exportButton, BorderLayout.SOUTH);
+
+            JDialog detailsDialog = new JDialog(dialog, "Mission Details", true);
+            detailsDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+            detailsDialog.setLayout(new BorderLayout());
+            detailsDialog.add(detailsPanel, BorderLayout.CENTER);
+            detailsDialog.pack();
+            detailsDialog.setLocationRelativeTo(dialog);
+
             exportButton.addActionListener(ev -> {
                 try {
                     MissionReport report = SQLDatabase.generateMissionReport(selected);
-                    report.exportReport(); // Save default file
+                    report.exportReport();
 
                     JOptionPane.showMessageDialog(this,
                             "Report exported successfully for Mission ID: " + selected.getMissionID(),
@@ -602,6 +647,8 @@ public class SystemInterface extends JFrame {
                                 java.nio.file.StandardCopyOption.REPLACE_EXISTING
                         );
                         JOptionPane.showMessageDialog(this, "Report saved successfully.");
+                        detailsDialog.dispose();
+                        dialog.dispose(); // Return to main after save
                     }
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -610,15 +657,10 @@ public class SystemInterface extends JFrame {
                 }
             });
 
-            JPanel detailsPanel = new JPanel(new BorderLayout());
-            detailsPanel.add(scrollPaneInner, BorderLayout.CENTER);
-            detailsPanel.add(exportButton, BorderLayout.SOUTH);
-
-            JOptionPane.showMessageDialog(this, detailsPanel, "Mission Details", JOptionPane.INFORMATION_MESSAGE);
+            detailsDialog.setVisible(true);
         });
 
         cancelButton.addActionListener(e -> dialog.setVisible(false));
-
         lowerButtonPanel.add(selectButton);
         lowerButtonPanel.add(cancelButton);
 
@@ -627,7 +669,6 @@ public class SystemInterface extends JFrame {
         dialog.add(lowerButtonPanel, BorderLayout.SOUTH);
         dialog.setVisible(true);
     }
-
 
     /**
      * Displays a modal dialog that allows the user to search for active
@@ -716,6 +757,7 @@ public class SystemInterface extends JFrame {
 
             boolean success = SQLDatabase.updateTerminationDate(selected.getMissionID(), today);
             if (success) {
+                SQLDatabase.unassignSpacecraftFromMission(selected.getMissionID());
                 JOptionPane.showMessageDialog(dialog, "Mission marked as terminated on: " + today);
                 missions = SQLDatabase.getAllMissions(); // refresh list
                 dialog.dispose();
@@ -745,22 +787,18 @@ public class SystemInterface extends JFrame {
         JPanel fieldPanel = new JPanel(new GridLayout(0, 1));
 
         String[] labels = {
-                "Mission ID:", "Employee ID (optional):", "Crew ID (optional):",
-                "Maneuver Type:", "Maneuver Details:",
-                "Fuel Cost:", "Status:"
+            "Mission ID:", "Maneuver Type:", "Maneuver Details:",
+            "Fuel Cost:", "Status:"
         };
 
         JTextField missionIDField = new JTextField();
-        JTextField empIDField = new JTextField();
-        JTextField crewIDField = new JTextField();
         JTextField typeField = new JTextField();
         JTextField detailField = new JTextField();
         JTextField fuelCostField = new JTextField();
         JTextField statusField = new JTextField();
 
         JTextField[] fields = {
-                missionIDField, empIDField, crewIDField, typeField, detailField,
-                fuelCostField, statusField
+            missionIDField, typeField, detailField, fuelCostField, statusField
         };
 
         for (String l : labels) {
@@ -783,39 +821,29 @@ public class SystemInterface extends JFrame {
 
         submit.addActionListener(e -> {
             try {
-                String missionIDText = missionIDField.getText().trim();
-                String empText = empIDField.getText().trim();
-                String crewText = crewIDField.getText().trim();
-
-                // Check conflict
-                // Validate required missionID
-                if (missionIDText.isEmpty()) {
+                String missionText = missionIDField.getText().trim();
+                if (missionText.isEmpty()) {
                     JOptionPane.showMessageDialog(dialog, "Mission ID must be entered.");
                     return;
                 }
-                int missionID = Integer.parseInt(missionIDText);
 
-                if (!empText.isEmpty() && !crewText.isEmpty()) {
-                    JOptionPane.showMessageDialog(dialog, "Please enter either Employee ID or Crew ID, not both.");
-                    return;
-                }
-
-                if (empText.isEmpty() && crewText.isEmpty()) {
-                    JOptionPane.showMessageDialog(dialog, "You must enter either an Employee ID or a Crew ID.");
-                    return;
-                }
-
-                Integer empID = empText.isEmpty() ? null : Integer.parseInt(empText);
-                Integer crewID = crewText.isEmpty() ? null : Integer.parseInt(crewText);
+                int missionID = Integer.parseInt(missionText);
                 String maneuverType = typeField.getText().trim();
-                String details = detailField.getText().trim();
+                String maneuverDetails = detailField.getText().trim();
                 int fuelCost = Integer.parseInt(fuelCostField.getText().trim());
                 String status = statusField.getText().trim();
 
-                // Use system-generated timestamps and logger info
+                // === Determine Role & Set EmployeeID/CrewID ===
+                Integer empID = employeeID;
+                Integer crewID = null;
+
+                if (SQLDatabase.isCrewCommander(empID) || SQLDatabase.isCrewMember(empID)) {
+                    // Retrieve crewID for current employee
+                    crewID = SQLDatabase.getCrewIDForEmployee(empID);
+                }
+
                 boolean success = SQLDatabase.insertImmediateManeuver(
-                        missionID, empID, crewID, maneuverType, details,
-                        fuelCost, status
+                        missionID, empID, crewID, maneuverType, maneuverDetails, fuelCost, status
                 );
 
                 if (success) {
@@ -849,14 +877,11 @@ public class SystemInterface extends JFrame {
         JPanel fieldPanel = new JPanel(new GridLayout(0, 1));
 
         String[] labels = {
-                "Mission ID:", "Employee ID (optional):", "Crew ID (optional):",
-                "Maneuver Type:", "Maneuver Details:", "Execution Time (YYYY-MM-DD HH:MM PST):",
-                "Fuel Cost:", "Status:"
+            "Mission ID:", "Maneuver Type:", "Maneuver Details:",
+            "Execution Time:", "Fuel Cost:", "Status:"
         };
 
         JTextField missionIDField = new JTextField();
-        JTextField empIDField = new JTextField();
-        JTextField crewIDField = new JTextField();
         JTextField typeField = new JTextField();
         JTextField detailField = new JTextField();
         JTextField execTimeField = new JTextField();
@@ -864,8 +889,7 @@ public class SystemInterface extends JFrame {
         JTextField statusField = new JTextField();
 
         JTextField[] fields = {
-                missionIDField, empIDField, crewIDField, typeField, detailField,
-                execTimeField, fuelCostField, statusField
+            missionIDField, typeField, detailField, execTimeField, fuelCostField, statusField
         };
 
         for (String l : labels) {
@@ -888,37 +912,23 @@ public class SystemInterface extends JFrame {
 
         submit.addActionListener(e -> {
             try {
-                String missionIDText = missionIDField.getText().trim();
-                String empText = empIDField.getText().trim();
-                String crewText = crewIDField.getText().trim();
-
-                if (missionIDText.isEmpty()) {
-                    JOptionPane.showMessageDialog(dialog, "Mission ID must be entered.");
-                    return;
-                }
-
-                int missionID = Integer.parseInt(missionIDText);
-
-                if (!empText.isEmpty() && !crewText.isEmpty()) {
-                    JOptionPane.showMessageDialog(dialog, "Please enter either Employee ID or Crew ID, not both.");
-                    return;
-                }
-
-                if (empText.isEmpty() && crewText.isEmpty()) {
-                    JOptionPane.showMessageDialog(dialog, "You must enter either an Employee ID or a Crew ID.");
-                    return;
-                }
-
-                Integer empID = empText.isEmpty() ? null : Integer.parseInt(empText);
-                Integer crewID = crewText.isEmpty() ? null : Integer.parseInt(crewText);
+                int missionID = Integer.parseInt(missionIDField.getText().trim());
                 String maneuverType = typeField.getText().trim();
-                String details = detailField.getText().trim();
+                String maneuverDetails = detailField.getText().trim();
                 String execTime = execTimeField.getText().trim();
                 int fuelCost = Integer.parseInt(fuelCostField.getText().trim());
                 String status = statusField.getText().trim();
 
+                Integer empID = employeeID;
+                Integer crewID = null;
+
+                // Determine crewID if user is in a crew
+                if (SQLDatabase.isCrewCommander(empID) || SQLDatabase.isCrewMember(empID)) {
+                    crewID = SQLDatabase.getCrewIDForEmployee(empID);
+                }
+
                 boolean success = SQLDatabase.insertFutureManeuver(
-                        missionID, empID, crewID, maneuverType, details,
+                        missionID, empID, crewID, maneuverType, maneuverDetails,
                         execTime, fuelCost, status
                 );
 
@@ -951,7 +961,7 @@ public class SystemInterface extends JFrame {
 
         JPanel topPanel = new JPanel(new BorderLayout());
         JTextField searchField = new JTextField();
-        topPanel.add(new JLabel("Search by manuver ID:"), BorderLayout.WEST);
+        topPanel.add(new JLabel("Search by maneuver ID:"), BorderLayout.WEST);
         topPanel.add(searchField, BorderLayout.CENTER);
 
         DefaultListModel<Maneuver> maneuverModel = new DefaultListModel<>();
@@ -961,12 +971,10 @@ public class SystemInterface extends JFrame {
         dialog.add(topPanel, BorderLayout.NORTH);
 
         List<Maneuver> allManeuvers = SQLDatabase.getAllManeuvers();
-        List<Mission> allMissions = SQLDatabase.getAllMissions();
         for (Maneuver m : allManeuvers) {
             maneuverModel.addElement(m);
         }
 
-        // Search filter
         searchField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             public void changedUpdate(javax.swing.event.DocumentEvent e) {
                 filter();
@@ -991,20 +999,13 @@ public class SystemInterface extends JFrame {
             }
         });
 
-        // === Form fields
         JPanel formPanel = new JPanel(new GridLayout(0, 2));
-        JTextField empIDField = new JTextField();
-        JTextField crewIDField = new JTextField();
         JTextField typeField = new JTextField();
         JTextField detailField = new JTextField();
         JTextField execTimeField = new JTextField();
         JTextField fuelCostField = new JTextField();
         JTextField statusField = new JTextField();
 
-        formPanel.add(new JLabel("Employee ID:"));
-        formPanel.add(empIDField);
-        formPanel.add(new JLabel("Crew ID:"));
-        formPanel.add(crewIDField);
         formPanel.add(new JLabel("Type:"));
         formPanel.add(typeField);
         formPanel.add(new JLabel("Details:"));
@@ -1021,8 +1022,6 @@ public class SystemInterface extends JFrame {
         maneuverList.addListSelectionListener(e -> {
             Maneuver selected = maneuverList.getSelectedValue();
             if (selected != null) {
-                empIDField.setText(selected.getEmployeeID() != null ? String.valueOf(selected.getEmployeeID()) : "");
-                crewIDField.setText(selected.getCrewID() != null ? String.valueOf(selected.getCrewID()) : "");
                 typeField.setText(selected.getManeuverType());
                 detailField.setText(selected.getManeuverDescription());
                 execTimeField.setText(selected.getExecutionTime());
@@ -1039,21 +1038,13 @@ public class SystemInterface extends JFrame {
                 return;
             }
             try {
-                String empText = empIDField.getText().trim();
-                String crewText = crewIDField.getText().trim();
+                Integer empID = employeeID;
+                Integer crewID = null;
 
-                if (!empText.isEmpty() && !crewText.isEmpty()) {
-                    JOptionPane.showMessageDialog(dialog, "Please enter either Employee ID or Crew ID, not both.");
-                    return;
+                if (SQLDatabase.isCrewCommander(empID) || SQLDatabase.isCrewMember(empID)) {
+                    crewID = SQLDatabase.getCrewIDForEmployee(empID);
                 }
 
-                if (empText.isEmpty() && crewText.isEmpty()) {
-                    JOptionPane.showMessageDialog(dialog, "You must enter either an Employee ID or a Crew ID.");
-                    return;
-                }
-
-                Integer empID = empText.isEmpty() ? null : Integer.parseInt(empText);
-                Integer crewID = crewText.isEmpty() ? null : Integer.parseInt(crewText);
                 String type = typeField.getText().trim();
                 String details = detailField.getText().trim();
                 String execTime = execTimeField.getText().trim();
@@ -1072,7 +1063,7 @@ public class SystemInterface extends JFrame {
                     JOptionPane.showMessageDialog(dialog, "Update failed.");
                 }
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(dialog, "Fuel cost and IDs must be numeric.");
+                JOptionPane.showMessageDialog(dialog, "Fuel cost must be a number.");
             }
         });
 
@@ -1106,9 +1097,9 @@ public class SystemInterface extends JFrame {
                 return;
             }
 
-            boolean success = SQLDatabase.updateLoggedTime(selected.getManeuverID());
+            boolean success = SQLDatabase.updateLoggedTimeAndBy(selected.getManeuverID(), employeeID);
             if (success) {
-                JOptionPane.showMessageDialog(dialog, "Logged time updated successfully.");
+                JOptionPane.showMessageDialog(dialog, "Maneuver logged successfully");
                 dialog.dispose();
             } else {
                 JOptionPane.showMessageDialog(dialog, "Failed to update logged time.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -1121,7 +1112,6 @@ public class SystemInterface extends JFrame {
         dialog.add(bottom, BorderLayout.SOUTH);
         dialog.setVisible(true);
     }
-
 
     private void viewEmployeesDialog() {
         JDialog dialog = new JDialog(this, "Employees", true);
@@ -1186,12 +1176,25 @@ public class SystemInterface extends JFrame {
                 return;
             }
 
+            // Determine role using helper methods
+            String role = "Unknown";
+            int id = selected.getEmployeeID();
+            if (SQLDatabase.isMissionController(id)) {
+                role = "Mission Controller";
+            } else if (SQLDatabase.isFlightDirector(id)) {
+                role = "Flight Director";
+            } else if (SQLDatabase.isCrewCommander(id)) {
+                role = "Crew Commander";
+            } else if (SQLDatabase.isCrewMember(id)) {
+                role = "Crew Member";
+            }
+
             // Build mission details text
             StringBuilder details = new StringBuilder();
             details.append("Employee Details:\n");
             details.append("EmployeeID: ").append(selected.getEmployeeID()).append("\n");
             details.append("Name: ").append(selected.getName()).append("\n");
-            details.append("Role: ").append(selected.getRole()).append("\n");
+            details.append("Role: ").append(role).append("\n");
             details.append("Email: ").append(selected.getEMail()).append("\n");
             details.append("Phone: ").append(selected.getPhoneNumber()).append("\n");
             details.append("Location: ").append(selected.getLocation()).append("\n");
@@ -1220,225 +1223,8 @@ public class SystemInterface extends JFrame {
         dialog.setVisible(true);
     }
 
-
-//    private void updateEmployeeDialog() {
-//        JDialog dialog = new JDialog(this, "Update employee information", true);
-//        dialog.setSize(600, 500);
-//        dialog.setLocationRelativeTo(frame);
-//        dialog.setLayout(new BorderLayout());
-//
-//        // ===== Top Panel: Search + Employee List =====
-//        JPanel topPanel = new JPanel(new BorderLayout());
-//        JPanel searchPanel = new JPanel(new GridLayout(1, 2));
-//        JLabel searchLabel = new JLabel("Search for an employee: ");
-//        JTextField searchTextField = new JTextField();
-//        searchPanel.add(searchLabel);
-//        searchPanel.add(searchTextField);
-//
-//        DefaultListModel<Employee> listModel = new DefaultListModel<>();
-//        JList<Employee> employeeList = new JList<>(listModel);
-//        JScrollPane scrollPane = new JScrollPane(employeeList);
-//
-//        topPanel.add(searchPanel, BorderLayout.NORTH);
-//        topPanel.add(scrollPane, BorderLayout.CENTER);
-//        dialog.add(topPanel, BorderLayout.NORTH);
-//
-//        // Load initial employee list
-//        for (Employee emp : employees) {
-//            listModel.addElement(emp);
-//        }
-//
-//        // Search filter functionality
-//        searchTextField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-//            public void insertUpdate(javax.swing.event.DocumentEvent e) {
-//                filterList();
-//            }
-//
-//            public void removeUpdate(javax.swing.event.DocumentEvent e) {
-//                filterList();
-//            }
-//
-//            public void changedUpdate(javax.swing.event.DocumentEvent e) {
-//                filterList();
-//            }
-//
-//            private void filterList() {
-//                String searchKey = searchTextField.getText().toLowerCase();
-//                listModel.clear();
-//                for (Employee emp : employees) {
-//                    if (emp.getName().toLowerCase().contains(searchKey)) {
-//                        listModel.addElement(emp);
-//                    }
-//                }
-//            }
-//        });
-//
-//        // ===== Center Panel: Form to Edit =====
-//        JPanel labelPanel = new JPanel(new GridLayout(0, 1));
-//        JPanel fieldPanel = new JPanel(new GridLayout(0, 1));
-//
-//        String[] labels = {
-//                "Name:", "Role:", "Email:", "Phone:", "Location:"
-//        };
-//
-//        JTextField nameField = new JTextField();
-//        JTextField roleField = new JTextField();
-//        JTextField emailField = new JTextField();
-//        JTextField phoneField = new JTextField();
-//        JTextField locationField = new JTextField();
-//
-//        JTextField[] fields = {
-//                nameField, roleField, emailField, phoneField, locationField
-//        };
-//
-//        for (String l : labels) {
-//            labelPanel.add(new JLabel(l));
-//        }
-//        for (JTextField f : fields) {
-//            fieldPanel.add(f);
-//        }
-//
-//        JPanel centerPanel = new JPanel(new GridLayout(0, 2));
-//        centerPanel.add(labelPanel);
-//        centerPanel.add(fieldPanel);
-//        dialog.add(centerPanel, BorderLayout.CENTER);
-//
-//        // Populate fields on selection
-//        employeeList.addListSelectionListener(e -> {
-//            Employee selected = employeeList.getSelectedValue();
-//            if (selected != null) {
-//                nameField.setText(selected.getName());
-//                roleField.setText(selected.getRole());
-//                emailField.setText(selected.getEMail());
-//                phoneField.setText(Integer.toString(selected.getPhoneNumber()));
-//                locationField.setText(selected.getLocation());
-//            }
-//        });
-//
-//        // ===== Bottom Panel: Submit/Cancel Buttons =====
-//        JPanel buttonPanel = new JPanel(new GridLayout(1, 2));
-//        JButton submitButton = new JButton("Submit");
-//        JButton cancelButton = new JButton("Cancel");
-//
-//        submitButton.addActionListener(e -> {
-//            Employee selected = employeeList.getSelectedValue();
-//            if (selected == null) {
-//                JOptionPane.showMessageDialog(dialog, "Please select an employee.");
-//                return;
-//            }
-//
-//            try {
-//                String updatedName = nameField.getText().trim();
-//                String updatedRole = roleField.getText().trim();
-//                String updatedEmail = emailField.getText().trim();
-//                int updatedPhone = Integer.parseInt(phoneField.getText().trim());
-//                String updatedLocation = locationField.getText().trim();
-//
-//                boolean success = SQLDatabase.updateEmployeeByID(
-//                        selected.getEmployeeID(), updatedName, updatedRole, updatedEmail, updatedPhone, updatedLocation
-//                );
-//
-//                if (success) {
-//                    JOptionPane.showMessageDialog(dialog, "Employee information updated successfully.");
-//                    employees = SQLDatabase.getAllEmployees();
-//                    dialog.dispose();
-//                } else {
-//                    JOptionPane.showMessageDialog(dialog, "Update failed. Please try again.");
-//                }
-//            } catch (NumberFormatException ex) {
-//                JOptionPane.showMessageDialog(dialog, "Please enter a valid phone number.");
-//            }
-//        });
-//
-//        cancelButton.addActionListener(e -> dialog.dispose());
-//        buttonPanel.add(submitButton);
-//        buttonPanel.add(cancelButton);
-//        dialog.add(buttonPanel, BorderLayout.SOUTH);
-//
-//        dialog.setVisible(true);
-//    }
-
-
-//    private void addEmployeeDialog() {
-//        JDialog dialog = new JDialog(this, "Add an Employee", true);
-//        dialog.setSize(600, 500);
-//        dialog.setLocationRelativeTo(frame);
-//        dialog.setLayout(new BorderLayout());
-//        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-//
-//        // ========== Label + Input Panels ==========
-//        JPanel labelPanel = new JPanel(new GridLayout(0, 1));
-//        JPanel fieldPanel = new JPanel(new GridLayout(0, 1));
-//
-//        // Labels and text field definitions for employee attributes
-//        String[] fieldLabels = {"Employee Name:", "Role:", "Email:", "Phone:", "Location:"};
-//
-//        JTextField nameField = new JTextField();
-//        JTextField roleField = new JTextField();
-//        JTextField emailField = new JTextField();
-//        JTextField phoneField = new JTextField();
-//        JTextField locationField = new JTextField();
-//
-//        // Group fields into array for easy iteration
-//        JTextField[] fields = {nameField, roleField, emailField, phoneField, locationField};
-//
-//        for (String label : fieldLabels) {
-//            labelPanel.add(new JLabel(label));
-//        }
-//        for (JTextField field : fields) {
-//            fieldPanel.add(field);
-//        }
-//
-//        JPanel centerPanel = new JPanel(new GridLayout(0, 2));
-//        centerPanel.add(labelPanel);
-//        centerPanel.add(fieldPanel);
-//        dialog.add(centerPanel, BorderLayout.CENTER);
-//
-//        // ========== Button Panel ==========
-//        JPanel buttonPanel = new JPanel(new GridLayout(1, 2));
-//        JButton submitButton = new JButton("Submit");
-//        JButton cancelButton = new JButton("Cancel");
-//
-//        cancelButton.addActionListener(e -> dialog.dispose());
-//
-//        // ===== Submit Button Logic =====
-//        submitButton.addActionListener(e -> {
-//            try {
-//                String employeeName = nameField.getText().trim();
-//                String role = roleField.getText().trim();
-//                String email = emailField.getText().trim();
-//                int phoneNumber = SQLDatabase.stringToInt(phoneField.getText().trim());
-//                String location = locationField.getText().trim();
-//
-//                // Insert employee via SQLDatabase helper
-//                boolean success = SQLDatabase.insertEmployee(employeeName, role, email, phoneNumber, location
-//                );
-//
-//                if (success) {
-//                    employees = SQLDatabase.getAllEmployees(); // Refresh mission list
-//                    JOptionPane.showMessageDialog(dialog, "Employee successfully added!");
-//                    dialog.dispose();
-//                } else {
-//                    JOptionPane.showMessageDialog(dialog, "Employee ID not found.", "Error", JOptionPane.ERROR_MESSAGE);
-//                }
-//
-//            } catch (NumberFormatException ex) {
-//                JOptionPane.showMessageDialog(dialog, "Please input a valid phone number", "Input Error", JOptionPane.ERROR_MESSAGE);
-//            } catch (Exception ex) {
-//                ex.printStackTrace();
-//                JOptionPane.showMessageDialog(dialog, "Database Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-//            }
-//        });
-//
-//        buttonPanel.add(submitButton);
-//        buttonPanel.add(cancelButton);
-//        dialog.add(buttonPanel, BorderLayout.SOUTH);
-//        dialog.setVisible(true);
-//    }
-
     public static void main(String[] args) {
-
-        SystemInterface example = new SystemInterface("Spacecraft Mission Control System");
-
+        showLoginFrame(); // open login first
     }
+
 }

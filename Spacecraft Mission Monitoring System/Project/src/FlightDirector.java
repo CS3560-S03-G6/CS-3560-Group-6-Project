@@ -3,8 +3,8 @@ public class FlightDirector extends Employee {
     private int yearsOfExperience;
 
     // constructor for flight director
-    public FlightDirector(int employeeID, String name, String role, String workEmail, int phoneNumber, String location, int yearsOfExperience) {
-        super(employeeID, name, role, workEmail, phoneNumber, location);
+    public FlightDirector(int employeeID, String name, String userName, String password, String workEmail, int phoneNumber, String location, int yearsOfExperience) {
+        super(employeeID, name, userName, password, workEmail, phoneNumber, location);
         this.yearsOfExperience = yearsOfExperience;
     }
 

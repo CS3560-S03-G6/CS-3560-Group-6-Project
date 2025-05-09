@@ -1,4 +1,4 @@
-CREATE DATABASE  IF NOT EXISTS `spacecraft_mission_monitoring_system` 
+CREATE DATABASE  IF NOT EXISTS `spacecraft_mission_monitoring_system_2` 
 /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `spacecraft_mission_monitoring_system`;
 -- MySQL dump 10.13  Distrib 8.0.41, for Win64 (x86_64)
@@ -28,7 +28,8 @@ DROP TABLE IF EXISTS `employee`;
 CREATE TABLE `employee` (
   `employeeID` int NOT NULL,
   `name` varchar(100) NOT NULL,
-  `role` varchar(100) NOT NULL,
+  `username` varchar(100) NOT NULL,
+  `password` varchar(100) NOT NULL,
   `workEmail` varchar(255) NOT NULL,
   `phoneNumber` varchar(20) DEFAULT NULL,
   `location` int DEFAULT NULL,
@@ -51,6 +52,25 @@ CREATE TABLE `flightdirector` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+
+DROP TABLE IF EXISTS `crewcommander`;
+CREATE TABLE `crewcommander` (
+  `employeeID` int NOT NULL,
+  `crewID` int NOT NULL,
+  PRIMARY KEY (`employeeID`),
+  CONSTRAINT `crewcommander_fk_employee` FOREIGN KEY (`employeeID`) REFERENCES `employee` (`employeeID`),
+  CONSTRAINT `crewcommander_fk_crew` FOREIGN KEY (`crewID`) REFERENCES `spacecraftcrew` (`crewID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+DROP TABLE IF EXISTS `crewmember`;
+CREATE TABLE `crewmember` (
+  `employeeID` int NOT NULL,
+  `crewID` int NOT NULL,
+  PRIMARY KEY (`employeeID`, `crewID`),
+  CONSTRAINT `crewmember_fk_employee` FOREIGN KEY (`employeeID`) REFERENCES `employee` (`employeeID`),
+  CONSTRAINT `crewmember_fk_crew` FOREIGN KEY (`crewID`) REFERENCES `spacecraftcrew` (`crewID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 --
 -- Table structure for table `issue`
 --
@@ -96,8 +116,7 @@ CREATE TABLE `maneuver` (
   KEY `employeeID` (`employeeID`),
   KEY `crewID` (`crewID`),
   CONSTRAINT `maneuver_ibfk_1` FOREIGN KEY (`missionID`) REFERENCES `mission` (`missionID`),
-  CONSTRAINT `maneuver_ibfk_2` FOREIGN KEY (`employeeID`) REFERENCES `flightdirector` (`employeeID`),
-  CONSTRAINT `maneuver_ibfk_3` FOREIGN KEY (`crewID`) REFERENCES `spacecraftcrew` (`crewID`)
+  CONSTRAINT `maneuver_ibfk_2` FOREIGN KEY (`crewID`) REFERENCES `spacecraftcrew` (`crewID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -111,6 +130,7 @@ DROP TABLE IF EXISTS `mission`;
 CREATE TABLE `mission` (
   `missionID` int NOT NULL AUTO_INCREMENT,
   `employeeID` int DEFAULT NULL,
+  `spacecraftID` int DEFAULT NULL,
   `missionName` varchar(100) NOT NULL,
   `missionType` varchar(100) DEFAULT NULL,
   `launchDate` varchar(50) DEFAULT NULL,
@@ -121,7 +141,9 @@ CREATE TABLE `mission` (
   `terminationDate` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`missionID`),
   KEY `employeeID` (`employeeID`),
-  CONSTRAINT `mission_ibfk_1` FOREIGN KEY (`employeeID`) REFERENCES `missioncontroller` (`employeeID`)
+  KEY `spacecraftID` (`spacecraftID`),
+  CONSTRAINT `mission_ibfk_1` FOREIGN KEY (`employeeID`) REFERENCES `missioncontroller` (`employeeID`),
+  CONSTRAINT `mission_ibfk_2` FOREIGN KEY (`spacecraftID`) REFERENCES `spacecraft` (`spacecraftID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -222,19 +244,14 @@ CREATE TABLE `spacecraft` (
 -
 -- Table structure for table `spacecraftcrew`
 --
-
 DROP TABLE IF EXISTS `spacecraftcrew`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `spacecraftcrew` (
   `crewID` int NOT NULL,
   `missionID` int DEFAULT NULL,
-  `crewSize` int DEFAULT NULL,
-  `commander` varchar(100) DEFAULT NULL,
   `crewHealthStatus` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`crewID`),
   KEY `missionID` (`missionID`),
-  CONSTRAINT `spacecraftcrew_ibfk_1` FOREIGN KEY (`missionID`) REFERENCES `mission` (`missionID`)
+  CONSTRAINT `spacecraftcrew_fk_mission` FOREIGN KEY (`missionID`) REFERENCES `mission` (`missionID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

@@ -20,11 +20,16 @@ public class SQLDatabase {
 
     public static List<Mission> getAllMissions() {
         List<Mission> missions = new ArrayList<>();
+        String sql = "SELECT m.*, s.spacecraftID AS s_id, s.missionID AS s_missionID, "
+                + "s.spacecraftName, s.spacecraftType, s.manufacturer, s.capacity, "
+                + "s.maxFuelCapacity, s.thrustPower, s.weight, s.status "
+                + "FROM mission m "
+                + "LEFT JOIN spacecraft s ON m.spacecraftID = s.spacecraftID";
 
-        try (Connection conn = getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery("SELECT * FROM mission")) {
-
+        try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                Mission m = new Mission(
+                Mission mission = new Mission(
                         rs.getString("missionName"),
                         rs.getString("missionType"),
                         rs.getString("launchDate"),
@@ -34,17 +39,35 @@ public class SQLDatabase {
                         rs.getString("initialLocation"),
                         rs.getString("terminationDate")
                 );
-                m.setMissionID(rs.getInt("missionID"));
-                missions.add(m);
+                mission.setMissionID(rs.getInt("missionID"));
+
+                // Populate spacecraft if available
+                if (rs.getObject("s_id") != null) {
+
+                    Spacecraft sc = new Spacecraft(
+                            rs.getInt("s_id"),
+                            (Integer) rs.getObject("s_missionID"), // ✅ clean and safe
+                            rs.getString("spacecraftName"),
+                            rs.getString("spacecraftType"),
+                            rs.getString("manufacturer"),
+                            rs.getInt("capacity"),
+                            rs.getInt("maxFuelCapacity"),
+                            rs.getInt("thrustPower"),
+                            rs.getInt("weight"),
+                            rs.getString("status")
+                    );
+                    mission.setSpacecraft(sc);
+                } else {
+                    mission.setSpacecraft(null);
+                }
+
+                missions.add(mission);
             }
-            System.out.println("Database and tables created successfully (or already exist).");
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         return missions;
     }
-
 
     public static int stringToInt(String string) {
         String returnString = "";
@@ -67,7 +90,8 @@ public class SQLDatabase {
                 Employee e = new Employee(
                         rs.getInt("employeeID"),
                         rs.getString("name"),
-                        rs.getString("role"),
+                        rs.getString("userName"),
+                        rs.getString("password"),
                         rs.getString("workEmail"),
                         stringToInt(rs.getString("phoneNumber")),
                         rs.getString("Location")
@@ -81,7 +105,6 @@ public class SQLDatabase {
 
         return employees;
     }
-
 
     public static List<Maneuver> getAllManeuvers() {
         List<Maneuver> maneuvers = new ArrayList<>();
@@ -110,85 +133,160 @@ public class SQLDatabase {
         return maneuvers;
     }
 
-    /**
-     * Inserts a new mission into the database if employeeID exists. Returns
-     * true if insertion is successful, false otherwise.
-     */
-    public static boolean insertMission(int employeeID, String name, String type, String launchDate,
-                                        String status, String objective, int fuelLevel,
-                                        String location, String terminationDate) {
-
-        String checkSQL = "SELECT COUNT(*) FROM employee WHERE employeeID = ?";
-        String insertSQL = "INSERT INTO mission (employeeID, missionName, missionType, launchDate, missionStatus, missionObjective, initialFuelLevel, initialLocation, terminationDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-        try (Connection conn = getConnection()) {
-
-            // Check if employeeID exists
-            PreparedStatement checkStmt = conn.prepareStatement(checkSQL);
-            checkStmt.setInt(1, employeeID);
-            ResultSet rs = checkStmt.executeQuery();
-            rs.next();
-            if (rs.getInt(1) == 0) {
-                return false; // Employee ID not found
+    public static int authenticateUser(String username, String password) {
+        String sql = "SELECT employeeID FROM employee WHERE username = ? AND password = ?";
+        try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, username);
+            stmt.setString(2, password);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("employeeID"); // Success
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1; // Login failed
+    }
 
-            // Insert the mission
-            PreparedStatement stmt = conn.prepareStatement(insertSQL);
+    public static boolean isMissionController(int employeeID) {
+        return existsInRoleTable("missioncontroller", employeeID);
+    }
+
+    public static boolean isFlightDirector(int employeeID) {
+        return existsInRoleTable("flightdirector", employeeID);
+    }
+
+    public static boolean isCrewCommander(int employeeID) {
+        return existsInRoleTable("crewcommander", employeeID);
+    }
+
+    public static boolean isCrewMember(int employeeID) {
+        return existsInRoleTable("crewmember", employeeID);
+    }
+
+    private static boolean existsInRoleTable(String tableName, int employeeID) {
+        String query = "SELECT 1 FROM " + tableName + " WHERE employeeID = ?";
+        try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, employeeID);
-            stmt.setString(2, name);
-            stmt.setString(3, type);
-            stmt.setString(4, launchDate);
-            stmt.setString(5, status);
-            stmt.setString(6, objective);
-            stmt.setInt(7, fuelLevel);
-            stmt.setString(8, location);
-            stmt.setString(9, terminationDate);
-
-            stmt.executeUpdate();
-            return true;
-
+            ResultSet rs = stmt.executeQuery();
+            return rs.next();
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
     }
 
+    // Get spacecrafts not assigned to any mission
+    public static List<Spacecraft> getAvailableSpacecraft() {
+        List<Spacecraft> available = new ArrayList<>();
+        String sql = "SELECT * FROM spacecraft WHERE missionID IS NULL";
+        try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                int missionID = rs.getObject("missionID") != null ? rs.getInt("missionID") : -1;
+                Spacecraft s = new Spacecraft(
+                        rs.getInt("spacecraftID"),
+                        missionID,
+                        rs.getString("spacecraftName"),
+                        rs.getString("spacecraftType"),
+                        rs.getString("manufacturer"),
+                        rs.getInt("capacity"),
+                        rs.getInt("maxFuelCapacity"),
+                        rs.getInt("thrustPower"),
+                        rs.getInt("weight"),
+                        rs.getString("status")
+                );
+                available.add(s);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return available;
+    }
 
-    public static boolean insertEmployee(String name, String role, String email, int phone, String location) {
-        String insertSQL = "INSERT INTO employee (employeeID, name, role, workEmail, phoneNumber, location) VALUES (?, ?, ?, ?, ?, ?)";
-        String getLastEmployeeIDSQL = "SELECT employeeID FROM employee ORDER BY employeeID DESC";
+// Insert mission and return generated missionID
+    public static int insertMissionReturnID(int employeeID, String missionName, String missionType, String launchDate,
+            String status, String objectives, int fuelLevel, String location,
+            String terminationDate, Integer spacecraftID) {
+        String sql = "INSERT INTO mission (employeeID, missionName, missionType, launchDate, missionStatus, missionObjective, initialFuelLevel, initialLocation, terminationDate, spacecraftID) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setInt(1, employeeID);
+            stmt.setString(2, missionName);
+            stmt.setString(3, missionType);
+            stmt.setString(4, launchDate);
+            stmt.setString(5, status);
+            stmt.setString(6, objectives);
+            stmt.setInt(7, fuelLevel);
+            stmt.setString(8, location);
+            stmt.setString(9, terminationDate.isEmpty() ? null : terminationDate);
+            if (spacecraftID != null) {
+                stmt.setInt(10, spacecraftID);
+            } else {
+                stmt.setNull(10, java.sql.Types.INTEGER);
+            }
+            int affected = stmt.executeUpdate();
+            if (affected > 0) {
+                ResultSet keys = stmt.getGeneratedKeys();
+                if (keys.next()) {
+                    return keys.getInt(1);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
 
-        try (Connection conn = getConnection()) {
-            // Insert the employee
-            PreparedStatement statement = conn.prepareStatement(getLastEmployeeIDSQL);
-            ResultSet results = statement.executeQuery();
-            results.next();
-            int newID = results.getInt("employeeID") + 1;
-
-            PreparedStatement stmt = conn.prepareStatement(insertSQL);
-
-            stmt.setInt(1, newID);
-            stmt.setString(2, name);
-            stmt.setString(3, role);
-            stmt.setString(4, email);
-            stmt.setInt(5, phone);
-            stmt.setInt(6, stringToInt(location));
-
+// Update spacecraft to point to mission
+    public static void assignSpacecraftToMission(int spacecraftID, int missionID) {
+        String sql = "UPDATE spacecraft SET missionID = ? WHERE spacecraftID = ?";
+        try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, missionID);
+            stmt.setInt(2, spacecraftID);
             stmt.executeUpdate();
-            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
+    public static void unassignSpacecraftFromMission(int missionID) {
+        try (Connection conn = getConnection()) {
+            // Null the missionID in the spacecraft table
+            String clearSpacecraft = "UPDATE spacecraft SET missionID = NULL WHERE missionID = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(clearSpacecraft)) {
+                stmt.setInt(1, missionID);
+                stmt.executeUpdate();
+            }
+
+            // Null the spacecraftID in the mission table
+            String clearMission = "UPDATE mission SET spacecraftID = NULL WHERE missionID = ?";
+            try (PreparedStatement stmt2 = conn.prepareStatement(clearMission)) {
+                stmt2.setInt(1, missionID);
+                stmt2.executeUpdate();
+            }
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
         }
     }
 
     public static boolean updateMissionByID(int missionID, String name, String type, String launch,
-                                            String status, String objectives, int fuel,
-                                            String location, String termination) {
-        String sql = "UPDATE mission SET missionName=?, missionType=?, launchDate=?, missionStatus=?, "
-                + "missionObjective=?, initialFuelLevel=?, initialLocation=?, terminationDate=? "
-                + "WHERE missionID=?";
+            String status, String objectives, int fuel,
+            String location, Integer spacecraftID, int employeeID) {
+
+        String sql;
+
+        // If a spacecraft is assigned, clear terminationDate
+        if (spacecraftID != null) {
+            sql = "UPDATE mission SET missionName=?, missionType=?, launchDate=?, missionStatus=?, "
+                    + "missionObjective=?, initialFuelLevel=?, initialLocation=?, terminationDate=NULL, "
+                    + "spacecraftID=?, employeeID=? WHERE missionID=?";
+        } else {
+            // If no spacecraft is assigned, just leave terminationDate as-is
+            sql = "UPDATE mission SET missionName=?, missionType=?, launchDate=?, missionStatus=?, "
+                    + "missionObjective=?, initialFuelLevel=?, initialLocation=?, "
+                    + "spacecraftID=?, employeeID=? WHERE missionID=?";
+        }
+
         try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, name);
             stmt.setString(2, type);
@@ -197,26 +295,19 @@ public class SQLDatabase {
             stmt.setString(5, objectives);
             stmt.setInt(6, fuel);
             stmt.setString(7, location);
-            stmt.setString(8, termination);
-            stmt.setInt(9, missionID);
-            return stmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
 
+            if (spacecraftID != null) {
+                stmt.setInt(8, spacecraftID);
+                stmt.setInt(9, employeeID);
+                stmt.setInt(10, missionID);
+            } else {
+                stmt.setNull(8, java.sql.Types.INTEGER);
+                stmt.setInt(9, employeeID);
+                stmt.setInt(10, missionID);
+            }
 
-    public static boolean updateEmployeeByID(int employeeID, String name, String role, String email, int phone, String location) {
-        String sql = "UPDATE employee SET name=?, role=?, workEmail=?, phoneNumber=?, location=? WHERE employeeID=?";
-        try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, name);
-            stmt.setString(2, role);
-            stmt.setString(3, email);
-            stmt.setInt(4, phone);
-            stmt.setString(5, location);
-            stmt.setInt(6, employeeID);
             return stmt.executeUpdate() > 0;
+
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -254,7 +345,9 @@ public class SQLDatabase {
                 checkStmt.setInt(1, reportID);
                 ResultSet rs = checkStmt.executeQuery();
                 rs.next();
-                if (rs.getInt(1) == 0) break; // Unique found
+                if (rs.getInt(1) == 0) {
+                    break; // Unique found
+                }
                 reportID = (int) (Math.random() * 100000); // Try again
             }
 
@@ -345,7 +438,7 @@ public class SQLDatabase {
 
         return new MissionReport(
                 reportID,
-                missionID,
+                mission,
                 dateGenerated,
                 maneuvers.toArray(new Maneuver[0]),
                 fuelUsed,
@@ -354,262 +447,282 @@ public class SQLDatabase {
         );
     }
 
-
     public static boolean insertImmediateManeuver(
-            int missionID, Integer employeeID, Integer crewID,
-            String maneuverType, String maneuverDetails,
-            int fuelCost, String status
-    ) {
-        try (Connection conn = getConnection()) {
+        int missionID, Integer employeeID, Integer crewID,
+        String maneuverType, String maneuverDetails,
+        int fuelCost, String status
+) {
+    try (Connection conn = getConnection()) {
 
-            // Check that mission exists
-            PreparedStatement missionCheck = conn.prepareStatement("SELECT COUNT(*) FROM mission WHERE missionID = ?");
-            missionCheck.setInt(1, missionID);
-            ResultSet missionRs = missionCheck.executeQuery();
-            missionRs.next();
-            if (missionRs.getInt(1) == 0) {
-                return false;
-            }
-
-            String loggedBy = null;
-            if (employeeID != null) {
-                // Validate employee exists AND role is one of the allowed roles
-                PreparedStatement empStmt = conn.prepareStatement("SELECT name, role FROM employee WHERE employeeID = ?");
-                empStmt.setInt(1, employeeID);
-                ResultSet rs = empStmt.executeQuery();
-                if (!rs.next()) {
-                    return false;
-                }
-
-                String role = rs.getString("role");
-                if (!(role.equalsIgnoreCase("Flight Director") || role.equalsIgnoreCase("Mission Controller") || role.equalsIgnoreCase("Crew Commander"))) {
-                    return false;
-                }
-
-                loggedBy = rs.getString("name") + " - " + role;
-
-            } else if (crewID != null) {
-                // Validate crew exists
-                PreparedStatement crewStmt = conn.prepareStatement("SELECT commander FROM spacecraftcrew WHERE crewID = ?");
-                crewStmt.setInt(1, crewID);
-                ResultSet rs = crewStmt.executeQuery();
-                if (!rs.next()) {
-                    return false;
-                }
-                loggedBy = "Commander " + rs.getString("commander") + " -  Crew #" + crewID;
-            } else {
-                return false;
-            }
-
-            String timestamp = java.time.ZonedDateTime.now(java.time.ZoneId.of("America/Los_Angeles"))
-                    .toString().substring(0, 16).replace("T", " ") + " PST";
-
-            PreparedStatement stmt = conn.prepareStatement(
-                    "INSERT INTO maneuver (missionID, employeeID, crewID, maneuverType, maneuverDetails, "
-                            + "executionTime, fuelCost, status, loggedTime, loggedBy) "
-                            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-            );
-
-            stmt.setInt(1, missionID);
-            if (employeeID != null) {
-                stmt.setInt(2, employeeID);
-            } else {
-                stmt.setNull(2, java.sql.Types.INTEGER);
-            }
-            if (crewID != null) {
-                stmt.setInt(3, crewID);
-            } else {
-                stmt.setNull(3, java.sql.Types.INTEGER);
-            }
-            stmt.setString(4, maneuverType);
-            stmt.setString(5, maneuverDetails);
-            stmt.setString(6, timestamp); // executionTime
-            stmt.setInt(7, fuelCost);
-            stmt.setString(8, status);
-            stmt.setString(9, timestamp); // loggedTime
-            stmt.setString(10, loggedBy);
-
-            return stmt.executeUpdate() > 0;
-        } catch (Exception e) {
-            e.printStackTrace();
+        // === Ensure mission exists ===
+        PreparedStatement missionCheck = conn.prepareStatement("SELECT COUNT(*) FROM mission WHERE missionID = ?");
+        missionCheck.setInt(1, missionID);
+        ResultSet missionRs = missionCheck.executeQuery();
+        missionRs.next();
+        if (missionRs.getInt(1) == 0) {
             return false;
         }
+
+        String loggedBy = null;
+
+
+        // Validate employee exists
+        PreparedStatement empStmt = conn.prepareStatement("SELECT name FROM employee WHERE employeeID = ?");
+        empStmt.setInt(1, employeeID);
+        ResultSet rs = empStmt.executeQuery();
+        if (!rs.next()) return false;
+
+        String name = rs.getString("name");
+        String role = null;
+
+        if (isMissionController(employeeID)) {
+            role = "Mission Controller";
+        } else if (isFlightDirector(employeeID)) {
+            role = "Flight Director";
+        } else if (isCrewCommander(employeeID)) {
+            role = "Crew Commander";
+        } else if (isCrewMember(employeeID)) {
+            role = "Crew Member";
+        }
+
+        if (role == null) {
+            return false; // not authorized
+        }
+
+        loggedBy = name + " - " + role;
+
+
+        // === Timestamp ===
+        String timestamp = java.time.ZonedDateTime.now(java.time.ZoneId.of("America/Los_Angeles"))
+                .toString().substring(0, 16).replace("T", " ") + " PST";
+
+        // === Insert maneuver ===
+        PreparedStatement stmt = conn.prepareStatement(
+                "INSERT INTO maneuver (missionID, employeeID, crewID, maneuverType, maneuverDetails, " +
+                        "executionTime, fuelCost, status, loggedTime, loggedBy) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        );
+
+        stmt.setInt(1, missionID);
+        if (employeeID != null) {
+            stmt.setInt(2, employeeID);
+        } else {
+            stmt.setNull(2, java.sql.Types.INTEGER);
+        }
+
+        if (crewID != null) {
+            stmt.setInt(3, crewID);
+        } else {
+            stmt.setNull(3, java.sql.Types.INTEGER);
+        }
+
+        stmt.setString(4, maneuverType);
+        stmt.setString(5, maneuverDetails);
+        stmt.setString(6, timestamp); // executionTime
+        stmt.setInt(7, fuelCost);
+        stmt.setString(8, status);
+        stmt.setString(9, timestamp); // loggedTime
+        stmt.setString(10, loggedBy);
+
+        return stmt.executeUpdate() > 0;
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return false;
     }
+}
+
 
     public static boolean insertFutureManeuver(
-            int missionID, Integer employeeID, Integer crewID,
-            String maneuverType, String maneuverDetails,
-            String executionTime, int fuelCost, String status
-    ) {
-        try (Connection conn = getConnection()) {
+        int missionID, Integer employeeID, Integer crewID,
+        String maneuverType, String maneuverDetails,
+        String executionTime, int fuelCost, String status
+) {
+    try (Connection conn = getConnection()) {
 
-            // Check that mission exists
-            PreparedStatement missionCheck = conn.prepareStatement("SELECT COUNT(*) FROM mission WHERE missionID = ?");
-            missionCheck.setInt(1, missionID);
-            ResultSet missionRs = missionCheck.executeQuery();
-            missionRs.next();
-            if (missionRs.getInt(1) == 0) {
-                return false;
-            }
-
-            String loggedBy = null;
-            if (employeeID != null) {
-                // Validate employee and role
-                PreparedStatement empStmt = conn.prepareStatement("SELECT name, role FROM employee WHERE employeeID = ?");
-                empStmt.setInt(1, employeeID);
-                ResultSet rs = empStmt.executeQuery();
-                if (!rs.next()) {
-                    return false;
-                }
-
-                String role = rs.getString("role");
-                if (!(role.equalsIgnoreCase("Flight Director") || role.equalsIgnoreCase("Mission Controller") || role.equalsIgnoreCase("Crew Commander"))) {
-                    return false;
-                }
-
-                loggedBy = rs.getString("name") + " - " + role;
-
-            } else if (crewID != null) {
-                PreparedStatement crewStmt = conn.prepareStatement("SELECT commander FROM spacecraftcrew WHERE crewID = ?");
-                crewStmt.setInt(1, crewID);
-                ResultSet rs = crewStmt.executeQuery();
-                if (!rs.next()) {
-                    return false;
-                }
-                loggedBy = "Commander " + rs.getString("commander") + " -  Crew #" + crewID;
-            } else {
-                return false;
-            }
-
-            String loggedTime = java.time.ZonedDateTime.now(java.time.ZoneId.of("America/Los_Angeles"))
-                    .toString().substring(0, 16).replace("T", " ") + " PST";
-
-            PreparedStatement stmt = conn.prepareStatement(
-                    "INSERT INTO maneuver (missionID, employeeID, crewID, maneuverType, maneuverDetails, "
-                            + "executionTime, fuelCost, status, loggedTime, loggedBy) "
-                            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-            );
-
-            stmt.setInt(1, missionID);
-            if (employeeID != null) {
-                stmt.setInt(2, employeeID);
-            } else {
-                stmt.setNull(2, java.sql.Types.INTEGER);
-            }
-            if (crewID != null) {
-                stmt.setInt(3, crewID);
-            } else {
-                stmt.setNull(3, java.sql.Types.INTEGER);
-            }
-            stmt.setString(4, maneuverType);
-            stmt.setString(5, maneuverDetails);
-            stmt.setString(6, executionTime); // <-- User input
-            stmt.setInt(7, fuelCost);
-            stmt.setString(8, status);
-            stmt.setString(9, loggedTime);
-            stmt.setString(10, loggedBy);
-
-            return stmt.executeUpdate() > 0;
-        } catch (Exception e) {
-            e.printStackTrace();
+        // === Ensure mission exists ===
+        PreparedStatement missionCheck = conn.prepareStatement("SELECT COUNT(*) FROM mission WHERE missionID = ?");
+        missionCheck.setInt(1, missionID);
+        ResultSet missionRs = missionCheck.executeQuery();
+        missionRs.next();
+        if (missionRs.getInt(1) == 0) {
             return false;
         }
+
+        // === Validate employee ===
+        PreparedStatement empStmt = conn.prepareStatement("SELECT name FROM employee WHERE employeeID = ?");
+        empStmt.setInt(1, employeeID);
+        ResultSet rs = empStmt.executeQuery();
+        if (!rs.next()) return false;
+
+        String name = rs.getString("name");
+        String role = null;
+
+        if (isMissionController(employeeID)) {
+            role = "Mission Controller";
+        } else if (isFlightDirector(employeeID)) {
+            role = "Flight Director";
+        } else if (isCrewCommander(employeeID)) {
+            role = "Crew Commander";
+        } else if (isCrewMember(employeeID)) {
+            role = "Crew Member";
+        }
+
+        if (role == null) {
+            return false; // not authorized
+        }
+
+        String loggedBy = name + " - " + role;
+
+        // === Log time when maneuver is created ===
+        String loggedTime = java.time.ZonedDateTime.now(java.time.ZoneId.of("America/Los_Angeles"))
+                .toString().substring(0, 16).replace("T", " ") + " PST";
+
+        PreparedStatement stmt = conn.prepareStatement(
+                "INSERT INTO maneuver (missionID, employeeID, crewID, maneuverType, maneuverDetails, " +
+                        "executionTime, fuelCost, status, loggedTime, loggedBy) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        );
+
+        stmt.setInt(1, missionID);
+        if (employeeID != null) {
+            stmt.setInt(2, employeeID);
+        } else {
+            stmt.setNull(2, java.sql.Types.INTEGER);
+        }
+
+        if (crewID != null) {
+            stmt.setInt(3, crewID);
+        } else {
+            stmt.setNull(3, java.sql.Types.INTEGER);
+        }
+
+        stmt.setString(4, maneuverType);
+        stmt.setString(5, maneuverDetails);
+        stmt.setString(6, executionTime); // future execution time entered by user
+        stmt.setInt(7, fuelCost);
+        stmt.setString(8, status);
+        stmt.setString(9, loggedTime);
+        stmt.setString(10, loggedBy);
+
+        return stmt.executeUpdate() > 0;
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return false;
     }
+}
 
     public static boolean updateManeuverByID(
-            int maneuverID, int missionID, Integer employeeID, Integer crewID,
-            String type, String details, String execTime, int fuelCost, String status) {
+        int maneuverID, int missionID, Integer employeeID, Integer crewID,
+        String type, String details, String execTime, int fuelCost, String status) {
 
-        try (Connection conn = getConnection()) {
-            // Validate maneuver exists
-            PreparedStatement maneuverCheck = conn.prepareStatement("SELECT COUNT(*) FROM maneuver WHERE maneuverID = ?");
-            maneuverCheck.setInt(1, maneuverID);
-            ResultSet manRs = maneuverCheck.executeQuery();
-            manRs.next();
-            if (manRs.getInt(1) == 0) {
-                return false;
-            }
+    try (Connection conn = getConnection()) {
+        PreparedStatement maneuverCheck = conn.prepareStatement("SELECT COUNT(*) FROM maneuver WHERE maneuverID = ?");
+        maneuverCheck.setInt(1, maneuverID);
+        ResultSet manRs = maneuverCheck.executeQuery();
+        manRs.next();
+        if (manRs.getInt(1) == 0) return false;
 
-            // Validate mission exists
-            PreparedStatement missionCheck = conn.prepareStatement("SELECT COUNT(*) FROM mission WHERE missionID = ?");
-            missionCheck.setInt(1, missionID);
-            ResultSet missionRs = missionCheck.executeQuery();
-            missionRs.next();
-            if (missionRs.getInt(1) == 0) {
-                return false;
-            }
+        PreparedStatement missionCheck = conn.prepareStatement("SELECT COUNT(*) FROM mission WHERE missionID = ?");
+        missionCheck.setInt(1, missionID);
+        ResultSet missionRs = missionCheck.executeQuery();
+        missionRs.next();
+        if (missionRs.getInt(1) == 0) return false;
 
-            // Validate only one of employeeID or crewID is provided
-            if ((employeeID == null && crewID == null) || (employeeID != null && crewID != null)) {
-                return false;
-            }
+        PreparedStatement empStmt = conn.prepareStatement("SELECT name FROM employee WHERE employeeID = ?");
+        empStmt.setInt(1, employeeID);
+        ResultSet rs = empStmt.executeQuery();
+        if (!rs.next()) return false;
 
-            // Determine loggedBy string
-            String loggedBy = null;
-            if (employeeID != null) {
-                PreparedStatement empStmt = conn.prepareStatement("SELECT name, role FROM employee WHERE employeeID = ?");
-                empStmt.setInt(1, employeeID);
-                ResultSet rs = empStmt.executeQuery();
-                if (!rs.next()) {
-                    return false;
-                }
+        String name = rs.getString("name");
+        String role = null;
 
-                String role = rs.getString("role");
-                if (!(role.equalsIgnoreCase("Flight Director")
-                        || role.equalsIgnoreCase("Mission Controller")
-                        || role.equalsIgnoreCase("Crew Commander"))) {
-                    return false;
-                }
-
-                loggedBy = rs.getString("name") + " - " + role;
-            } else {
-                PreparedStatement crewStmt = conn.prepareStatement("SELECT commander FROM spacecraftcrew WHERE crewID = ?");
-                crewStmt.setInt(1, crewID);
-                ResultSet rs = crewStmt.executeQuery();
-                if (!rs.next()) {
-                    return false;
-                }
-
-                loggedBy = "Commander " + rs.getString("commander") + " -  Crew #" + crewID;
-            }
-
-            // Use system-generated loggedTime
-            String loggedTime = java.time.ZonedDateTime.now(java.time.ZoneId.of("America/Los_Angeles"))
-                    .toString().substring(0, 16).replace("T", " ") + " PST";
-
-            // Perform update
-            PreparedStatement stmt = conn.prepareStatement(
-                    "UPDATE maneuver SET missionID = ?, employeeID = ?, crewID = ?, maneuverType = ?, "
-                            + "maneuverDetails = ?, executionTime = ?, fuelCost = ?, status = ?, loggedTime = ?, loggedBy = ? "
-                            + "WHERE maneuverID = ?"
-            );
-
-            stmt.setInt(1, missionID);
-            if (employeeID != null) {
-                stmt.setInt(2, employeeID);
-            } else {
-                stmt.setNull(2, java.sql.Types.INTEGER);
-            }
-            if (crewID != null) {
-                stmt.setInt(3, crewID);
-            } else {
-                stmt.setNull(3, java.sql.Types.INTEGER);
-            }
-            stmt.setString(4, type);
-            stmt.setString(5, details);
-            stmt.setString(6, execTime);
-            stmt.setInt(7, fuelCost);
-            stmt.setString(8, status);
-            stmt.setString(9, loggedTime);
-            stmt.setString(10, loggedBy);
-            stmt.setInt(11, maneuverID);
-
-            return stmt.executeUpdate() > 0;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+        if (isMissionController(employeeID)) {
+            role = "Mission Controller";
+        } else if (isFlightDirector(employeeID)) {
+            role = "Flight Director";
+        } else if (isCrewCommander(employeeID)) {
+            role = "Crew Commander";
+        } else if (isCrewMember(employeeID)) {
+            role = "Crew Member";
         }
+
+        if (role == null) return false;
+
+        String loggedBy = name + " - " + role;
+        String loggedTime = java.time.ZonedDateTime.now(java.time.ZoneId.of("America/Los_Angeles"))
+                .toString().substring(0, 16).replace("T", " ") + " PST";
+
+        PreparedStatement stmt = conn.prepareStatement(
+                "UPDATE maneuver SET missionID = ?, employeeID = ?, crewID = ?, maneuverType = ?, " +
+                        "maneuverDetails = ?, executionTime = ?, fuelCost = ?, status = ?, loggedTime = ?, loggedBy = ? " +
+                        "WHERE maneuverID = ?"
+        );
+
+        stmt.setInt(1, missionID);
+        if (employeeID != null) stmt.setInt(2, employeeID); else stmt.setNull(2, java.sql.Types.INTEGER);
+        if (crewID != null) stmt.setInt(3, crewID); else stmt.setNull(3, java.sql.Types.INTEGER);
+        stmt.setString(4, type);
+        stmt.setString(5, details);
+        stmt.setString(6, execTime);
+        stmt.setInt(7, fuelCost);
+        stmt.setString(8, status);
+        stmt.setString(9, loggedTime);
+        stmt.setString(10, loggedBy);
+        stmt.setInt(11, maneuverID);
+
+        return stmt.executeUpdate() > 0;
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return false;
     }
+}
+    
+    public static boolean updateLoggedTimeAndBy(int maneuverID, int employeeID) {
+    try (Connection conn = getConnection()) {
+        // Validate employee exists
+        PreparedStatement empStmt = conn.prepareStatement("SELECT name FROM employee WHERE employeeID = ?");
+        empStmt.setInt(1, employeeID);
+        ResultSet rs = empStmt.executeQuery();
+        if (!rs.next()) return false;
+
+        String name = rs.getString("name");
+        String role = null;
+
+        if (isMissionController(employeeID)) {
+            role = "Mission Controller";
+        } else if (isFlightDirector(employeeID)) {
+            role = "Flight Director";
+        } else if (isCrewCommander(employeeID)) {
+            role = "Crew Commander";
+        } else if (isCrewMember(employeeID)) {
+            role = "Crew Member";
+        }
+
+        if (role == null) return false;
+
+        String loggedBy = name + " - " + role;
+        String timestamp = java.time.ZonedDateTime.now(java.time.ZoneId.of("America/Los_Angeles"))
+                .toString().substring(0, 16).replace("T", " ") + " PST";
+
+        PreparedStatement update = conn.prepareStatement(
+                "UPDATE maneuver SET loggedTime = ?, loggedBy = ? WHERE maneuverID = ?"
+        );
+        update.setString(1, timestamp);
+        update.setString(2, loggedBy);
+        update.setInt(3, maneuverID);
+
+        return update.executeUpdate() > 0;
+    } catch (Exception e) {
+        e.printStackTrace();
+        return false;
+    }
+}
+
+    
+
 
     public static boolean updateLoggedTime(int maneuverID) {
         try (Connection conn = getConnection()) {
@@ -678,6 +791,36 @@ public class SQLDatabase {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public static Integer getCrewIDForEmployee(int employeeID) {
+        String sql;
+
+        // Check in crewmember table
+        sql = "SELECT crewID FROM crewmember WHERE employeeID = ?";
+        try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, employeeID);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("crewID");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        // If not found in crewmember, check in crewcommander
+        sql = "SELECT crewID FROM crewcommander WHERE employeeID = ?";
+        try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, employeeID);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("crewID");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
 }

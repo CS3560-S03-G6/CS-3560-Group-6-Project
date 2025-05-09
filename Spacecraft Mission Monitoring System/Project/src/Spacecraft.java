@@ -1,10 +1,10 @@
 
 import com.sun.jdi.connect.spi.Connection;
 
-
 public class Spacecraft {
+
     private int spacecraftID;
-    private int missionID;
+    private Integer missionID;
     private String spacecraftName;
     private String spacecraftType;
     private String manufacturer;
@@ -15,7 +15,7 @@ public class Spacecraft {
     private String status;
 
     //Constructor that takes in all necessary fields
-    public Spacecraft(int spacecraftID, int missionID, String spacecraftName, String spacecraftType, String manufacturer, int capacity, int maxFuelCapacity, int thrustPower, int weight, String status){
+    public Spacecraft(int spacecraftID, Integer missionID, String spacecraftName, String spacecraftType, String manufacturer, int capacity, int maxFuelCapacity, int thrustPower, int weight, String status) {
         this.spacecraftID = spacecraftID;
         this.missionID = missionID;
         this.spacecraftName = spacecraftName;
@@ -29,107 +29,112 @@ public class Spacecraft {
     }
 
     //Getter for spacecraftID
-    public int getSpacecraftID(){
+    public int getSpacecraftID() {
         return spacecraftID;
     }
 
     //Setter for spacecraftID
-    public void setSpacecraftID(int spacecraftID){
+    public void setSpacecraftID(int spacecraftID) {
         this.spacecraftID = spacecraftID;
     }
 
     //Getter for missionID
-    public int getMissionID(){
+    public Integer getMissionID() {
         return missionID;
     }
 
     //Setter for missionID
-    public void setMissionID(int missionID){
+    public void setMissionID(Integer missionID) {
         this.missionID = missionID;
     }
 
     //Getter for spacecraftName
-    public String getSpacecraftName(){
+    public String getSpacecraftName() {
         return spacecraftName;
     }
 
     //Setter for spacecraftName
-    public void setSpacecraftName(String spacecraftName){
+    public void setSpacecraftName(String spacecraftName) {
         this.spacecraftName = spacecraftName;
     }
 
     //Getter for spacecraftType
-    public String getSpacecraftType(){
+    public String getSpacecraftType() {
         return spacecraftType;
     }
 
     //Setter for spacecraftType
-    public void setSpacecraftType(String spacecraftType){
+    public void setSpacecraftType(String spacecraftType) {
         this.spacecraftType = spacecraftType;
     }
 
     //Getter for manufacturer
-    public String getManufacturer(){
+    public String getManufacturer() {
         return manufacturer;
     }
 
     //Setter for manufacturer
-    public void setManufacturer(String manufacturer){
+    public void setManufacturer(String manufacturer) {
         this.manufacturer = manufacturer;
     }
 
     //Getter for capacity
-    public int getCapacity(){
+    public int getCapacity() {
         return capacity;
     }
 
     //Setter for capacity
-    public void setCapacity(int capacity){
+    public void setCapacity(int capacity) {
         this.capacity = capacity;
     }
 
     //Getter for maxFuelCapacity
-    public int getMaxFuelCapacity(){
+    public int getMaxFuelCapacity() {
         return maxFuelCapacity;
     }
 
     //Setter for maxFuelCapacity
-    public void setMaxFuelCapacity(int maxFuelCapacity){
+    public void setMaxFuelCapacity(int maxFuelCapacity) {
         this.maxFuelCapacity = maxFuelCapacity;
     }
 
     //Getter for thrustPower
-    public int getThrustPower(){
+    public int getThrustPower() {
         return thrustPower;
     }
 
     //Setter for thrustPower
-    public void setThrustPower(int thrustPower){
+    public void setThrustPower(int thrustPower) {
         this.thrustPower = thrustPower;
     }
 
     //Getter for weight
-    public int getWeight(){
+    public int getWeight() {
         return weight;
     }
 
     //Setter for weight
-    public void setWeight(int weight){
+    public void setWeight(int weight) {
         this.weight = weight;
     }
 
     //Getter for status
-    public String getStatus(){
+    public String getStatus() {
         return status;
     }
 
     //Setter for status
-    public void setStatus(String status){
+    public void setStatus(String status) {
         this.status = status;
     }
-    
-    public String displaySpacecraftDetails(){
+
+    public String displaySpacecraftDetails() {
         return "Spacecraft detail ...";
+    }
+
+    @Override
+    public String toString() {
+        return "#" + spacecraftID + " - " + spacecraftName + " (" + spacecraftType + ")";
     }
 
 }

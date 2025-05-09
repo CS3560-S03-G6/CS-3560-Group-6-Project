@@ -2,8 +2,8 @@ public class MissionController extends Employee {
     private int authorityLevel;
 
     // constructor that takes all necessary fields from Employee and authorityLevel
-    public MissionController(int employeeID, String name, String role, String workEmail, int phoneNumber, String location, int authorityLevel) {
-        super(employeeID, name, role, workEmail, phoneNumber, location);
+    public MissionController(int employeeID, String name, String userName, String password, String workEmail, int phoneNumber, String location, int authorityLevel) {
+        super(employeeID, name, userName, password, workEmail, phoneNumber, location);
         this.authorityLevel = authorityLevel;
     }
 
